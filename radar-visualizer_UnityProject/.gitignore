@@ -1,0 +1,12 @@
+# Default generated stuff
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/QCAR/
+
+# Unity3D Generated File On Crash Reports
+/sysinfo.txt
+/Assets/StreamingAssets/build_info.txt
+/Assets/StreamingAssets/build_info.txt.meta
+
