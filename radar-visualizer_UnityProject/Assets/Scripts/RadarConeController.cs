@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class RadarConeController : MonoBehaviour
+public class RadarConeController : Singleton<RadarConeController>
 {
     #region public serialised vars
     [SerializeField]
     RadarConeRenderer _coneRenderer;
     [SerializeField]
     UnitBase _player;
-    [SerializeField]
-    Vector2[] _coneAngles;
+    //[SerializeField]
+    //Vector2[] _coneAngles;
     #endregion
 
 
@@ -22,11 +22,12 @@ public class RadarConeController : MonoBehaviour
 
 
     #region pub methods
+    /*
     public Vector2 SetConeAngles(int preset)
     {
         _coneRenderer.GenerateCone(_coneAngles[preset]);
         return _coneAngles[preset];
-    }
+    }*/
 
     public void SetConeAngles(Vector2 angles)
     {
@@ -40,6 +41,7 @@ public class RadarConeController : MonoBehaviour
 
 
     #region events
+    /*
     void OnToggleTWS()
     {
         _isTWS = !_isTWS;
@@ -50,18 +52,19 @@ public class RadarConeController : MonoBehaviour
         currentRotation.y = 0;
         transform.localRotation = Quaternion.Euler(currentRotation);
     }
+    */
     #endregion
 
 
     #region mono events
     private void Awake()
     {
-        SetConeAngles(0);
+        RegisterSingleton(this);
     }
 
     private void Start()
     {
-        GlobalInputHandler.Instance.OnToggleTWS += OnToggleTWS;
+        //GlobalInputHandler.Instance.OnToggleTWS += OnToggleTWS;
     }
 
     private void Update()

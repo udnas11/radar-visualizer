@@ -9,6 +9,7 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
 
     public Action OnToggleTWS;
     public Action<Vector2> OnCursorAxisChange;
+    public Action<float> OnDisplayZoomAxisChange;
 
     #region public serialised vars
     [SerializeField]
@@ -26,6 +27,7 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
 
     #region private protected methods
     Vector2 _cursorAxis = Vector2.zero;
+    float _zoomAxis = 0;
     #endregion
 
 
@@ -50,6 +52,13 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
         {
             _cursorAxis = newCurAxis;
             OnCursorAxisChange(_cursorAxis);
+        }
+
+        float zoomAxis = Input.GetAxisRaw("DisplayZoom");
+        if (zoomAxis != _zoomAxis)
+        {
+            _zoomAxis = zoomAxis;
+            OnDisplayZoomAxisChange(_zoomAxis);
         }
     }
     #endregion
