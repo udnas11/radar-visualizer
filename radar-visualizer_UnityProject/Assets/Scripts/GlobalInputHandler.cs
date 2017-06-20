@@ -7,9 +7,9 @@ using UnityEngine.Assertions;
 public class GlobalInputHandler : Singleton<GlobalInputHandler>
 {
 
-    public Action OnToggleTWS;
-    public Action<Vector2> OnCursorAxisChange;
-    public Action<float> OnDisplayZoomAxisChange;
+    public event Action OnToggleTWS;
+    public event Action<Vector2> OnCursorAxisChange;
+    public event Action<float> OnDisplayZoomAxisChange;
 
     #region public serialised vars
     [SerializeField]

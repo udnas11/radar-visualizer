@@ -11,24 +11,16 @@ public class RadarConeController : Singleton<RadarConeController>
     RadarConeRenderer _coneRenderer;
     [SerializeField]
     UnitBase _player;
-    //[SerializeField]
-    //Vector2[] _coneAngles;
+    [SerializeField]
+    Transform _cursor;
     #endregion
 
 
     #region private protected vars
-    bool _isTWS;
     #endregion
 
 
     #region pub methods
-    /*
-    public Vector2 SetConeAngles(int preset)
-    {
-        _coneRenderer.GenerateCone(_coneAngles[preset]);
-        return _coneAngles[preset];
-    }*/
-
     public void SetConeAngles(Vector2 angles)
     {
         _coneRenderer.GenerateCone(angles);
@@ -41,18 +33,16 @@ public class RadarConeController : Singleton<RadarConeController>
 
 
     #region events
-    /*
-    void OnToggleTWS()
+    private void OnCursorPositionUpdate(Vector3 pos, float angle)
     {
-        _isTWS = !_isTWS;
-
-        SetConeAngles(_isTWS ? 1 : 0);
-
-        Vector3 currentRotation = transform.localRotation.eulerAngles;
-        currentRotation.y = 0;
-        transform.localRotation = Quaternion.Euler(currentRotation);
+        _cursor.localPosition = pos;
+        _cursor.localRotation = Quaternion.Euler(90f, angle, 0f);
     }
-    */
+
+    private void OnRadarConeAngleChanged(Vector2 newAngles)
+    {
+        SetConeAngles(newAngles);
+    }
     #endregion
 
 
@@ -64,7 +54,8 @@ public class RadarConeController : Singleton<RadarConeController>
 
     private void Start()
     {
-        //GlobalInputHandler.Instance.OnToggleTWS += OnToggleTWS;
+        RadarDisplayController.Instance.OnCursorPositionUpdate += OnCursorPositionUpdate;
+        RadarDisplayController.Instance.OnRadarConeAngleChange += OnRadarConeAngleChanged;
     }
 
     private void Update()

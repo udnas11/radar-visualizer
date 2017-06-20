@@ -7,6 +7,9 @@ using UnityEngine.Assertions;
 
 public class RadarDisplayController : Singleton<RadarDisplayController>
 {
+    public event Action<Vector3, float> OnCursorPositionUpdate; // worldspace, angle left/right
+    public event Action<Vector2> OnRadarConeAngleChange;
+
     #region public serialised vars
     [SerializeField, Header("Cursor")]
     RectTransform _cursor;
@@ -15,8 +18,6 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     [SerializeField, Header("Indicators")]
     Text _zoomText;
-
-    public Transform shit;
     #endregion
 
 
@@ -29,11 +30,11 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
 
     #region pub methods
-    Vector3 TransformDisplayToWorld(Vector2 position)
+    Vector3 TransformDisplayToWorld(Vector2 position, out float angle)
     {
         float distance = Mathf.InverseLerp(0, _areaSize, position.y) * _zoomFactor;
         
-        float angle = position.x / (_areaSize/2);
+        angle = position.x / (_areaSize/2);
         angle *= Constants.RadarConfig.LRSRadarConeAngles.x*0.5f;
 
         Vector3 result = Quaternion.Euler(0f, angle, 0f) * new Vector3(0f, 0f, distance);
@@ -69,7 +70,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         _isTWS = !_isTWS;
 
         _coneAngles = _isTWS ? Constants.RadarConfig.TWSRadarConeAngles : Constants.RadarConfig.LRSRadarConeAngles;
-        RadarConeController.Instance.SetConeAngles(_coneAngles);
+        if (OnRadarConeAngleChange != null)
+            OnRadarConeAngleChange(_coneAngles);
     }
     #endregion
 
@@ -93,17 +95,19 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     private void Update()
     {
-        Vector2 move = _cursorAxis * _cursorMoveSpeed * Time.deltaTime;
-        move = _cursor.anchoredPosition + move;
-        move.x = Mathf.Clamp(move.x, -_areaSize / 2, _areaSize / 2);
-        move.y = Mathf.Clamp(move.y, 0, _areaSize);
-        _cursor.anchoredPosition = move;
-
-        if (Input.GetKeyDown(KeyCode.G))
+        if (_cursorAxis != Vector2.zero)
         {
-            Debug.Log(_cursor.anchoredPosition);
-            Vector3 pos = TransformDisplayToWorld(_cursor.anchoredPosition);
-            Instantiate(shit, pos, Quaternion.identity);
+            Vector2 move = _cursorAxis * _cursorMoveSpeed * Time.deltaTime;
+            move = _cursor.anchoredPosition + move;
+            move.x = Mathf.Clamp(move.x, -_areaSize / 2, _areaSize / 2);
+            move.y = Mathf.Clamp(move.y, 0, _areaSize);
+            _cursor.anchoredPosition = move;
+
+            float angle;
+            Vector3 pos = TransformDisplayToWorld(_cursor.anchoredPosition, out angle);
+
+            if (OnCursorPositionUpdate != null)
+                OnCursorPositionUpdate(pos, angle);
         }
     }
     #endregion
