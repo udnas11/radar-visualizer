@@ -31,9 +31,6 @@ public class RadarConeRenderer : MonoBehaviour
         List<Vector2> uvs = new List<Vector2>();
         verticies.Add(Vector3.zero); // origin
         uvs.Add(new Vector2(0.5f, 0.5f));
-
-        Vector3 mT = Quaternion.Euler(angles.y * -0.5f, 0f, 0f) * new Vector3(0f, 0f, 80f);
-        Vector3 mB = Quaternion.Euler(angles.y * 0.5f, 0f, 0f) * new Vector3(0f, 0f, 80f);
         
         Vector2 uvRB = new Vector2(1, 0);
         Vector2 uvLB = new Vector2(0, 0);

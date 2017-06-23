@@ -27,8 +27,8 @@ public class Cursor3DRenderer : MonoBehaviour
         MeshFilter mFilter = GetComponent<MeshFilter>();
         Mesh mesh = new Mesh();
 
-        float angle = Constants.RadarConfig.LRSRadarConeAngles.y;
-        //float angle = 180;
+        //float angle = Constants.RadarConfig.LRSRadarConeAngles.y;
+        float angle = 60f;
         
         List<Vector3> verticies = new List<Vector3>();
         List<Color> colors = new List<Color>();

@@ -12,7 +12,9 @@ public class RadarConeController : Singleton<RadarConeController>
     [SerializeField]
     UnitBase _player;
     [SerializeField]
-    Transform _cursor2D, _cursor3D;
+    Transform _cursor2D;
+    [SerializeField]
+    Transform _cursor3D;
     #endregion
 
 
@@ -25,10 +27,23 @@ public class RadarConeController : Singleton<RadarConeController>
     {
         _coneRenderer.GenerateCone(angles);
     }
+
+    public float GetPivotAltitude()
+    {
+        return transform.position.y;
+    }
     #endregion
 
 
     #region private protected methods
+    private void UpdateCursor3D()
+    {
+        Vector2 altitudeLimits = RadarDisplayController.Instance.AltitudeLimits;
+        altitudeLimits.x -= transform.position.y;
+        altitudeLimits.y -= transform.position.y;
+        _cursor3D.localScale = new Vector3(0.5f, 0.5f, altitudeLimits.y - altitudeLimits.x);
+        _cursor3D.localPosition = new Vector3(0f, 0f, -Mathf.Lerp(altitudeLimits.x, altitudeLimits.y, 0.5f));
+    }
     #endregion
 
 
@@ -37,7 +52,8 @@ public class RadarConeController : Singleton<RadarConeController>
     {
         _cursor2D.localPosition = pos;
         _cursor2D.localRotation = Quaternion.Euler(90f, angle, 0f);
-        _cursor3D.localScale = new Vector3(pos.magnitude, pos.magnitude, pos.magnitude);
+
+        UpdateCursor3D();
     }
 
     private void OnRadarConeAngleChanged(Vector2 newAngles)
@@ -47,8 +63,9 @@ public class RadarConeController : Singleton<RadarConeController>
 
     private void OnRadarConeRotationChanged(Vector2 newRot)
     {
-        transform.localRotation = Quaternion.Euler(-newRot.y, 0f, 0f);
-        _coneRenderer.transform.localRotation = Quaternion.Euler(0f, newRot.x, 0f);
+        //transform.localRotation = Quaternion.Euler(-newRot.y, 0f, 0f);
+        _coneRenderer.transform.localRotation = Quaternion.Euler(-newRot.y, newRot.x, 0f);
+        UpdateCursor3D();
     }
     #endregion
 
