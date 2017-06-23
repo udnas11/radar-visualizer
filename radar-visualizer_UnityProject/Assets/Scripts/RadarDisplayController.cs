@@ -148,6 +148,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         RegisterSingleton(this);
 
         _coneAngles = Constants.RadarConfig.LRSRadarConeAngles;
+        _coneRotation = Vector2.zero;
     }
 
     private void Start()
@@ -157,7 +158,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         GlobalInputHandler.Instance.OnToggleTWS += OnToggleTWS;
         GlobalInputHandler.Instance.OnRadarElevationAxisChange += OnRadarElevationInputChange;
 
-        RadarConeController.Instance.SetConeAngles(_coneAngles);
+        RadarConeController.Instance.SetConeAngles(_coneAngles, _coneRotation);
     }
 
     private void Update()

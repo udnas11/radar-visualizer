@@ -121,7 +121,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4468482814901174, guid: 389d336c3abdc1241934ddc0b9606cc1, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 3.3
       objectReference: {fileID: 0}
     - target: {fileID: 4468482814901174, guid: 389d336c3abdc1241934ddc0b9606cc1, type: 2}
       propertyPath: m_LocalPosition.z
@@ -1962,7 +1962,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cursor: {fileID: 368836907}
   _cursorMoveSpeed: 300
-  _elevationRotateSpeed: 30
+  _elevationRotateSpeed: 20
   _zoomText: {fileID: 754448287}
   _altitudeMaxText: {fileID: 1320378747}
   _altitudeMinText: {fileID: 1684831594}

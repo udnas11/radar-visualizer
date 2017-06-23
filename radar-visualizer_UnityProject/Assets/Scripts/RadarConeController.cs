@@ -19,13 +19,15 @@ public class RadarConeController : Singleton<RadarConeController>
 
 
     #region private protected vars
+    Vector2 _coneAngles;
+    Vector2 _coneRotation;
     #endregion
 
 
     #region pub methods
-    public void SetConeAngles(Vector2 angles)
+    public void SetConeAngles(Vector2 angles, Vector2 rotation)
     {
-        _coneRenderer.GenerateCone(angles);
+        _coneRenderer.GenerateCone(angles, rotation);
     }
 
     public float GetPivotAltitude()
@@ -58,13 +60,15 @@ public class RadarConeController : Singleton<RadarConeController>
 
     private void OnRadarConeAngleChanged(Vector2 newAngles)
     {
-        SetConeAngles(newAngles);
+        _coneAngles = newAngles;
+        SetConeAngles(_coneAngles, _coneRotation);
     }
 
     private void OnRadarConeRotationChanged(Vector2 newRot)
     {
-        //transform.localRotation = Quaternion.Euler(-newRot.y, 0f, 0f);
-        _coneRenderer.transform.localRotation = Quaternion.Euler(-newRot.y, newRot.x, 0f);
+        //_coneRenderer.transform.localRotation = Quaternion.Euler(-newRot.y, newRot.x, 0f);
+        _coneRotation = newRot;
+        SetConeAngles(_coneAngles, _coneRotation);
         UpdateCursor3D();
     }
     #endregion

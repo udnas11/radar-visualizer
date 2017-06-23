@@ -21,10 +21,14 @@ public class RadarConeRenderer : MonoBehaviour
 
 
     #region private protected methods
-    public void GenerateCone(Vector2 angles)
+    public void GenerateCone(Vector2 angles, Vector2 rotation)
     {
         MeshFilter mFilter = GetComponent<MeshFilter>();
-        Mesh mesh = new Mesh();
+        Mesh mesh = mFilter.mesh;
+        if (mesh == null)
+            mesh = new Mesh();
+
+        mesh.MarkDynamic();
 
         // VERTICIES and uvs
         List<Vector3> verticies = new List<Vector3>();
@@ -41,8 +45,8 @@ public class RadarConeRenderer : MonoBehaviour
         {
             float t = i / (float)_horizontalDivisions;
             float tuv = j / (float)_horizontalDivisions;
-            Vector3 top = Quaternion.Euler(angles.y * -0.5f, angles.x * t, 0f) * new Vector3(0f, 0f, 80f);
-            Vector3 bot = Quaternion.Euler(angles.y * 0.5f, angles.x * t, 0f) * new Vector3(0f, 0f, 80f);
+            Vector3 top = Constants.GetPoint(80f, new Vector2(angles.x * t + rotation.x, angles.y * 0.5f + rotation.y));
+            Vector3 bot = Constants.GetPoint(80f, new Vector2(angles.x * t + rotation.x, angles.y * -0.5f + rotation.y));
             verticies.Add(top);
             verticies.Add(bot);
 

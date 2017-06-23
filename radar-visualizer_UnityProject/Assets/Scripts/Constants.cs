@@ -18,6 +18,16 @@ static public class Constants
         return angels * AngelsToNmRatio;
     }
 
+    static public Vector3 GetPoint(float distance, Vector2 rotation)
+    {
+        // float HD = Mathf.Sin(bRad) * AD;
+        Vector3 result = Vector3.zero;
+        result.z = distance;
+        result.y = Mathf.Sin(rotation.y * Mathf.Deg2Rad) * distance;
+        result = Quaternion.Euler(0f, rotation.x, 0f) * result;
+        return result;
+    }
+
     static public class RadarConfig
     {
         static public readonly Vector2 LRSRadarConeAngles = new Vector2(120f, 10f);
