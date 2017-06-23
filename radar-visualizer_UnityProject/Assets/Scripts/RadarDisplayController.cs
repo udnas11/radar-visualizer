@@ -101,8 +101,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     void UpdateAltitudeText()
     {
         _altitudeLimits = GetAltitudeLimitsAtDistance(_cursorDistance);
-        _altitudeMaxText.text = Constants.NMtoAngels(_altitudeLimits.y).ToString();
-        _altitudeMinText.text = Constants.NMtoAngels(_altitudeLimits.x).ToString();
+        _altitudeMaxText.text = Mathf.Clamp((int)Constants.NMtoAngels(_altitudeLimits.y), 0, 60).ToString();
+        _altitudeMinText.text = Mathf.Clamp((int)Constants.NMtoAngels(_altitudeLimits.x), 0, 60).ToString();
     }
     #endregion
 
