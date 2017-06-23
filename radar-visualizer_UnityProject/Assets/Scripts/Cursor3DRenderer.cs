@@ -28,18 +28,22 @@ public class Cursor3DRenderer : MonoBehaviour
         Mesh mesh = new Mesh();
 
         float angle = Constants.RadarConfig.LRSRadarConeAngles.y;
+        //float angle = 180;
         
         List<Vector3> verticies = new List<Vector3>();
-        int[] indicies = new int[12];
-        for (float a = -angle/2f, i = 0; a < angle/2f; a += angle/12f, i++)
+        List<Color> colors = new List<Color>();
+        int[] indicies = new int[13];
+        for (float a = -angle/2f, i = 0; a <= angle/2f; a += angle/12f, i++)
         {
             float radA = Mathf.Deg2Rad * a;
             Vector3 pos = new Vector3(0f, Mathf.Sin(radA), Mathf.Cos(radA) - 1f);
             verticies.Add(pos);
             indicies[(int)i] = (int)i;
+            colors.Add(Color.green);
         }
 
         mesh.SetVertices(verticies);
+        mesh.SetColors(colors);
 
         mesh.SetIndices(indicies, MeshTopology.LineStrip, 0, true);
 

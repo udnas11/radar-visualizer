@@ -12,7 +12,7 @@ public class RadarConeController : Singleton<RadarConeController>
     [SerializeField]
     UnitBase _player;
     [SerializeField]
-    Transform _cursor;
+    Transform _cursor2D, _cursor3D;
     #endregion
 
 
@@ -35,13 +35,20 @@ public class RadarConeController : Singleton<RadarConeController>
     #region events
     private void OnCursorPositionUpdate(Vector3 pos, float angle)
     {
-        _cursor.localPosition = pos;
-        _cursor.localRotation = Quaternion.Euler(90f, angle, 0f);
+        _cursor2D.localPosition = pos;
+        _cursor2D.localRotation = Quaternion.Euler(90f, angle, 0f);
+        _cursor3D.localScale = new Vector3(pos.magnitude, pos.magnitude, pos.magnitude);
     }
 
     private void OnRadarConeAngleChanged(Vector2 newAngles)
     {
         SetConeAngles(newAngles);
+    }
+
+    private void OnRadarConeRotationChanged(Vector2 newRot)
+    {
+        transform.localRotation = Quaternion.Euler(-newRot.y, 0f, 0f);
+        _coneRenderer.transform.localRotation = Quaternion.Euler(0f, newRot.x, 0f);
     }
     #endregion
 
@@ -56,6 +63,7 @@ public class RadarConeController : Singleton<RadarConeController>
     {
         RadarDisplayController.Instance.OnCursorPositionUpdate += OnCursorPositionUpdate;
         RadarDisplayController.Instance.OnRadarConeAngleChange += OnRadarConeAngleChanged;
+        RadarDisplayController.Instance.OnRadarConeRotationChange += OnRadarConeRotationChanged;
     }
 
     private void Update()

@@ -10,6 +10,7 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
     public event Action OnToggleTWS;
     public event Action<Vector2> OnCursorAxisChange;
     public event Action<float> OnDisplayZoomAxisChange;
+    public event Action<float> OnRadarElevationAxisChange;
 
     #region public serialised vars
     [SerializeField]
@@ -28,6 +29,7 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
     #region private protected methods
     Vector2 _cursorAxis = Vector2.zero;
     float _zoomAxis = 0;
+    float _radarElevationAxis = 0;
     #endregion
 
 
@@ -59,6 +61,13 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
         {
             _zoomAxis = zoomAxis;
             OnDisplayZoomAxisChange(_zoomAxis);
+        }
+
+        float radarElevationAxis = Input.GetAxisRaw("RadarElevation");
+        if (radarElevationAxis != _radarElevationAxis)
+        {
+            _radarElevationAxis = radarElevationAxis;
+            OnRadarElevationAxisChange(_radarElevationAxis);
         }
     }
     #endregion
