@@ -25,6 +25,10 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     Text _altitudeMaxText;
     [SerializeField]
     Text _altitudeMinText;
+    [SerializeField]
+    RectTransform _circleBL;
+    [SerializeField]
+    RectTransform _circleBR;
     #endregion
 
 
@@ -94,6 +98,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
         UpdateAltitudeText();
 
+        UpdateHorizontalZone();
+
         if (OnCursorPositionUpdate != null)
             OnCursorPositionUpdate(pos, angle);
     }
@@ -109,13 +115,41 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         RectTransform rt = _altitudeMaxText.GetComponent<RectTransform>();
         float t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.y);
         rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, _areaSize/2f, t));
-        rt.pivot = new Vector2(0f, t);
 
         //pos down
         rt = _altitudeMinText.GetComponent<RectTransform>();
         t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.x);
         rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, _areaSize / 2f, t));
-        rt.pivot = new Vector2(0f, t);
+    }
+    
+    void UpdateHorizontalZone()
+    {
+        float lastConeRotationX = _coneRotation.x;
+        if (_isTWS == false)
+        {
+            _circleBL.pivot = new Vector2(0f, 0f);
+            _circleBL.anchoredPosition = new Vector2(-_areaSize/2, 0f);
+            _circleBR.pivot = new Vector2(1f, 0f);
+            _circleBR.anchoredPosition = new Vector2(_areaSize/2, 0f);
+            _coneRotation.x = 0f;
+        }
+        else
+        {
+            float cursorPos = Mathf.Clamp(_cursor.anchoredPosition.x, -_areaSize / 4f, _areaSize / 4f);
+            float angleHorizontal;
+            TransformDisplayToWorld(new Vector2(cursorPos, 10f), out angleHorizontal);
+            _coneRotation.x = angleHorizontal;
+
+            _circleBL.pivot = new Vector2(0.5f, 0f);
+            _circleBL.anchoredPosition = new Vector2(cursorPos - _areaSize / 4f, 0f);
+
+            _circleBR.pivot = new Vector2(0.5f, 0f);
+            _circleBR.anchoredPosition = new Vector2(cursorPos + _areaSize / 4f, 0f);
+        }
+
+        if (_coneRotation.x != lastConeRotationX)
+            if (OnRadarConeRotationChange != null)
+                OnRadarConeRotationChange(_coneRotation);
     }
     #endregion
 
@@ -147,6 +181,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     void OnToggleTWS()
     {
         _isTWS = !_isTWS;
+
+        UpdateHorizontalZone();
 
         _coneAngles = _isTWS ? Constants.RadarConfig.TWSRadarConeAngles : Constants.RadarConfig.LRSRadarConeAngles;
         if (OnRadarConeAngleChange != null)
