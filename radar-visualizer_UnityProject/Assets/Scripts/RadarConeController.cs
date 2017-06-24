@@ -27,6 +27,8 @@ public class RadarConeController : Singleton<RadarConeController>
     #region pub methods
     public void SetConeAngles(Vector2 angles, Vector2 rotation)
     {
+        _coneAngles = angles;
+        _coneRotation = rotation;
         _coneRenderer.GenerateCone(angles, rotation);
     }
 
@@ -60,15 +62,12 @@ public class RadarConeController : Singleton<RadarConeController>
 
     private void OnRadarConeAngleChanged(Vector2 newAngles)
     {
-        _coneAngles = newAngles;
-        SetConeAngles(_coneAngles, _coneRotation);
+        SetConeAngles(newAngles, _coneRotation);
     }
 
     private void OnRadarConeRotationChanged(Vector2 newRot)
     {
-        //_coneRenderer.transform.localRotation = Quaternion.Euler(-newRot.y, newRot.x, 0f);
-        _coneRotation = newRot;
-        SetConeAngles(_coneAngles, _coneRotation);
+        SetConeAngles(_coneAngles, newRot);
         UpdateCursor3D();
     }
     #endregion

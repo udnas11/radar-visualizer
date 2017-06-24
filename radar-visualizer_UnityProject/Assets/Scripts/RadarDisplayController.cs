@@ -101,8 +101,21 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     void UpdateAltitudeText()
     {
         _altitudeLimits = GetAltitudeLimitsAtDistance(_cursorDistance);
-        _altitudeMaxText.text = Mathf.Clamp((int)Constants.NMtoAngels(_altitudeLimits.y), 0, 60).ToString();
-        _altitudeMinText.text = Mathf.Clamp((int)Constants.NMtoAngels(_altitudeLimits.x), 0, 60).ToString();
+        Vector2 altitudeLimitsAngels = new Vector2(Mathf.Clamp(Constants.NMtoAngels(_altitudeLimits.x), 0f, 60f), Mathf.Clamp(Constants.NMtoAngels(_altitudeLimits.y), 0f, 60f));
+        _altitudeMaxText.text = ((int)altitudeLimitsAngels.y).ToString();
+        _altitudeMinText.text = ((int)altitudeLimitsAngels.x).ToString();
+
+        //pos up
+        RectTransform rt = _altitudeMaxText.GetComponent<RectTransform>();
+        float t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.y);
+        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, _areaSize/2f, t));
+        rt.pivot = new Vector2(0f, t);
+
+        //pos down
+        rt = _altitudeMinText.GetComponent<RectTransform>();
+        t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.x);
+        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, _areaSize / 2f, t));
+        rt.pivot = new Vector2(0f, t);
     }
     #endregion
 
@@ -159,6 +172,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         GlobalInputHandler.Instance.OnRadarElevationAxisChange += OnRadarElevationInputChange;
 
         RadarConeController.Instance.SetConeAngles(_coneAngles, _coneRotation);
+        UpdateAltitudeText();
     }
 
     private void Update()
