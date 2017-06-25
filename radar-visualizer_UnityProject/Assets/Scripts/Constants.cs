@@ -6,6 +6,8 @@ using UnityEngine.Assertions;
 
 static public class Constants
 {
+    public const float DisplayAreaSize = 476;
+
     public const float AngelsToNmRatio = 0.164579f;
 
     static public float NMtoAngels(float nauticalMiles)

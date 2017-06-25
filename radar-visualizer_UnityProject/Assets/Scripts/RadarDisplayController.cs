@@ -26,19 +26,25 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     [SerializeField]
     Text _altitudeMinText;
     [SerializeField]
+    Text _modeText;
+    [SerializeField]
     RectTransform _circleBL;
     [SerializeField]
     RectTransform _circleBR;
+
+    [SerializeField, Header("Unit management")]
+    UnitDisplay _prefabUnitDisplay;
+    [SerializeField]
+    RectTransform _enemyArea;
     #endregion
 
 
     #region private protected vars
     int _zoomFactor = 80;
-    float _cursorDistance;
+    float _cursorDistance = 40f;
     Vector2 _coneAngles;
     bool _isTWS = false;
     Vector2 _coneRotation = Vector2.zero;
-    const float _areaSize = 476;
     Vector2 _altitudeLimits;
 
     Vector2 _cursorAxis = Vector2.zero;
@@ -52,37 +58,47 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     public Vector2 ConeRotation { get { return _coneRotation; } }
     public Vector2 AltitudeLimits { get { return _altitudeLimits; } }
 
-    Vector3 TransformDisplayToWorld(Vector2 position, out float angle)
+    public Vector3 TransformDisplayToWorld(Vector2 position, out float angle)
     {
-        float distance = Mathf.InverseLerp(0, _areaSize, position.y) * _zoomFactor;
+        float distance = Mathf.InverseLerp(0, Constants.DisplayAreaSize, position.y) * _zoomFactor;
         
-        angle = position.x / (_areaSize/2);
+        angle = position.x / (Constants.DisplayAreaSize / 2);
         angle *= Constants.RadarConfig.LRSRadarConeAngles.x*0.5f;
 
         Vector3 result = Quaternion.Euler(0f, angle, 0f) * new Vector3(0f, 0f, distance);
         return result;
     }
 
+    public Vector2 TransformWorldToDisplay(Vector3 worldPos, out float angle, out float distance)
+    {
+        Vector3 worldGround = worldPos;
+        worldGround.y = 0f;
+
+        distance = worldGround.magnitude;
+        angle = Mathf.Atan(worldGround.x / worldGround.z) * Mathf.Rad2Deg;
+
+        return new Vector2((angle/(Constants.RadarConfig.LRSRadarConeAngles.x)) * Constants.DisplayAreaSize, (distance/_zoomFactor)* Constants.DisplayAreaSize);
+    }
+
     public Vector2 GetAltitudeLimitsAtDistance(float distance)
     {
-        /*
-        HD = sin(b)AD
-        CD = sin(a / 2 + b)AD
-        BD = sin(b - a/2)*AD
-        */
         float a = _coneAngles.y;
         float aRad = a * Mathf.Deg2Rad;
         float b = _coneRotation.y;
         float bRad = b * Mathf.Deg2Rad;
 
         float AD = distance;
-
-        float HD = Mathf.Sin(bRad) * AD;
         float CD = Mathf.Sin(aRad / 2f + bRad) * AD;
         float BD = Mathf.Sin(bRad - aRad / 2f) * AD;
 
         float altitudeDelta = RadarConeController.Instance.GetPivotAltitude();
         return new Vector2(altitudeDelta + BD, altitudeDelta + CD);
+    }
+
+    public UnitDisplay CreateUnitDisplay(UnitBase unitWorld)
+    {
+        UnitDisplay newInst = Instantiate(_prefabUnitDisplay, _enemyArea) as UnitDisplay;
+        return newInst;
     }
     #endregion
 
@@ -114,37 +130,38 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         //pos up
         RectTransform rt = _altitudeMaxText.GetComponent<RectTransform>();
         float t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.y);
-        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, _areaSize/2f, t));
+        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
 
         //pos down
         rt = _altitudeMinText.GetComponent<RectTransform>();
         t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.x);
-        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, _areaSize / 2f, t));
+        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
     }
     
     void UpdateHorizontalZone()
     {
         float lastConeRotationX = _coneRotation.x;
+        float areaSize = Constants.DisplayAreaSize;
         if (_isTWS == false)
         {
             _circleBL.pivot = new Vector2(0f, 0f);
-            _circleBL.anchoredPosition = new Vector2(-_areaSize/2, 0f);
+            _circleBL.anchoredPosition = new Vector2(-areaSize / 2, 0f);
             _circleBR.pivot = new Vector2(1f, 0f);
-            _circleBR.anchoredPosition = new Vector2(_areaSize/2, 0f);
+            _circleBR.anchoredPosition = new Vector2(areaSize / 2, 0f);
             _coneRotation.x = 0f;
         }
         else
         {
-            float cursorPos = Mathf.Clamp(_cursor.anchoredPosition.x, -_areaSize / 4f, _areaSize / 4f);
+            float cursorPos = Mathf.Clamp(_cursor.anchoredPosition.x, -areaSize / 4f, areaSize / 4f);
             float angleHorizontal;
             TransformDisplayToWorld(new Vector2(cursorPos, 10f), out angleHorizontal);
             _coneRotation.x = angleHorizontal;
 
             _circleBL.pivot = new Vector2(0.5f, 0f);
-            _circleBL.anchoredPosition = new Vector2(cursorPos - _areaSize / 4f, 0f);
+            _circleBL.anchoredPosition = new Vector2(cursorPos - areaSize / 4f, 0f);
 
             _circleBR.pivot = new Vector2(0.5f, 0f);
-            _circleBR.anchoredPosition = new Vector2(cursorPos + _areaSize / 4f, 0f);
+            _circleBR.anchoredPosition = new Vector2(cursorPos + areaSize / 4f, 0f);
         }
 
         if (_coneRotation.x != lastConeRotationX)
@@ -182,6 +199,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     {
         _isTWS = !_isTWS;
 
+        _modeText.text = _isTWS ? "TWS" : "RWS";
+
         UpdateHorizontalZone();
 
         _coneAngles = _isTWS ? Constants.RadarConfig.TWSRadarConeAngles : Constants.RadarConfig.LRSRadarConeAngles;
@@ -215,10 +234,11 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     {
         if (_cursorAxis != Vector2.zero)
         {
+            float areaSize = Constants.DisplayAreaSize;
             Vector2 move = _cursorAxis * _cursorMoveSpeed * Time.deltaTime;
             move = _cursor.anchoredPosition + move;
-            move.x = Mathf.Clamp(move.x, -_areaSize / 2, _areaSize / 2);
-            move.y = Mathf.Clamp(move.y, 0, _areaSize);
+            move.x = Mathf.Clamp(move.x, -areaSize / 2, areaSize / 2);
+            move.y = Mathf.Clamp(move.y, 0, areaSize);
 
             UpdateCursorPosition(move);
         }
