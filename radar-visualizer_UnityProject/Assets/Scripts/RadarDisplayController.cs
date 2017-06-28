@@ -95,10 +95,22 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         return new Vector2(altitudeDelta + BD, altitudeDelta + CD);
     }
 
-    public UnitDisplay CreateUnitDisplay(UnitBase unitWorld)
+    public UnitDisplay CreateUnitDisplay(UnitEnemy unitWorld)
     {
         UnitDisplay newInst = Instantiate(_prefabUnitDisplay, _enemyArea) as UnitDisplay;
         return newInst;
+    }
+
+    //user interaction
+    public void SetRadarElevation(float degrees)
+    {
+        //float newAngle = Mathf.Clamp(_coneRotation.y + _elevationAxis * Time.deltaTime * _elevationRotateSpeed, -30f, 30f);
+        _coneRotation.y = degrees;
+
+        UpdateAltitudeText();
+
+        if (OnRadarConeRotationChange != null)
+            OnRadarConeRotationChange(_coneRotation);
     }
     #endregion
 
@@ -123,7 +135,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     void UpdateAltitudeText()
     {
         _altitudeLimits = GetAltitudeLimitsAtDistance(_cursorDistance);
-        Vector2 altitudeLimitsAngels = new Vector2(Mathf.Clamp(Constants.NMtoAngels(_altitudeLimits.x), 0f, 60f), Mathf.Clamp(Constants.NMtoAngels(_altitudeLimits.y), 0f, 60f));
+        Vector2 altitudeLimitsAngels = new Vector2(Mathf.Clamp(Math.NMtoAngels(_altitudeLimits.x), 0f, 60f), Mathf.Clamp(Math.NMtoAngels(_altitudeLimits.y), 0f, 60f));
         _altitudeMaxText.text = ((int)altitudeLimitsAngels.y).ToString();
         _altitudeMinText.text = ((int)altitudeLimitsAngels.x).ToString();
 
@@ -244,13 +256,14 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         }
 
         if (_elevationAxis != 0f)
-        {
-            _coneRotation.y = Mathf.Clamp(_coneRotation.y + _elevationAxis * Time.deltaTime * _elevationRotateSpeed, -30f, 30f);
-
-            UpdateAltitudeText();
+        {            
+            float newAngle = Mathf.Clamp(_coneRotation.y + _elevationAxis * Time.deltaTime * _elevationRotateSpeed, -30f, 30f);
+            SetRadarElevation(newAngle);
+            /*UpdateAltitudeText();
 
             if (OnRadarConeRotationChange != null)
                 OnRadarConeRotationChange(_coneRotation);
+                */
         }
     }
 

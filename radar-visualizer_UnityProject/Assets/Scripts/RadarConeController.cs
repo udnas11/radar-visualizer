@@ -10,7 +10,7 @@ public class RadarConeController : Singleton<RadarConeController>
     [SerializeField]
     RadarConeRenderer _coneRenderer;
     [SerializeField]
-    UnitBase _player;
+    Transform _player;
     [SerializeField]
     Transform _cursor2D;
     [SerializeField]

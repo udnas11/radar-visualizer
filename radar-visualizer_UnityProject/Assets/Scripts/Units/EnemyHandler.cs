@@ -13,8 +13,7 @@ public class EnemyHandler : Singleton<EnemyHandler>
 
 
     #region private protected vars
-    List<UnitBase> _enemies = new List<UnitBase>();
-    //Dictionary<UnitEnemy, UnitDisplay> _enemies = new Dictionary<UnitEnemy, UnitDisplay>();
+    List<UnitEnemy> _enemies = new List<UnitEnemy>();
     #endregion
 
 

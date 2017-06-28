@@ -34,7 +34,7 @@ public class UnitDisplay : MonoBehaviour
     {
         _isVisible = newState;
 
-        _image.color = _isVisible ? Color.green : Color.red;
+        _image.color = _isVisible ? Color.green : Constants.Colors.EnemyDisplayInvisible;
     }
     #endregion
 

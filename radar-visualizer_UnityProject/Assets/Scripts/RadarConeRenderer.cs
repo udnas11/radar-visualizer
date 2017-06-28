@@ -45,8 +45,8 @@ public class RadarConeRenderer : MonoBehaviour
         {
             float t = i / (float)_horizontalDivisions;
             float tuv = j / (float)_horizontalDivisions;
-            Vector3 top = Constants.GetPoint(80f, new Vector2(angles.x * t + rotation.x, angles.y * 0.5f + rotation.y));
-            Vector3 bot = Constants.GetPoint(80f, new Vector2(angles.x * t + rotation.x, angles.y * -0.5f + rotation.y));
+            Vector3 top = Math.GetPoint(80f, new Vector2(angles.x * t + rotation.x, angles.y * 0.5f + rotation.y));
+            Vector3 bot = Math.GetPoint(80f, new Vector2(angles.x * t + rotation.x, angles.y * -0.5f + rotation.y));
             verticies.Add(top);
             verticies.Add(bot);
 
