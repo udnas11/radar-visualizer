@@ -22,6 +22,14 @@ public class UnitDisplay : MonoBehaviour
 
 
     #region pub methods
+    public bool DoesFitDisplay()
+    {
+        Vector2 pos = _rt.anchoredPosition;
+        bool horizontal = Mathf.Abs(pos.x) <= Constants.DisplayAreaSize/2f;
+        bool vertical = 0f <= pos.y && pos.y <= Constants.DisplayAreaSize;
+        return horizontal && vertical;
+    }
+
     public void SetVisible(bool newState)
     {
         _isVisible = newState;
@@ -38,6 +46,8 @@ public class UnitDisplay : MonoBehaviour
         Vector2 displayPos = RadarDisplayController.Instance.TransformWorldToDisplay(WorldUnit.transform.position, out angle, out distance);
 
         _rt.anchoredPosition = displayPos;
+
+        _image.enabled = DoesFitDisplay();
     }
     #endregion
 

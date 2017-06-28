@@ -14,7 +14,13 @@ public class UnitBase : MonoBehaviour
         float distance = transform.position.magnitude;
         float alt = transform.position.y;
         Vector2 altitudeLimits = RadarDisplayController.Instance.GetAltitudeLimitsAtDistance(distance);
-        return altitudeLimits.x <= alt && alt <= altitudeLimits.y;
+        bool altitudeVisible = altitudeLimits.x <= alt && alt <= altitudeLimits.y;
+
+        float angle = Constants.GetPointHorizontalAngle(transform.position);
+        Vector2 coneAngles = RadarDisplayController.Instance.ConeAngles;
+        Vector2 coneRotation = RadarDisplayController.Instance.ConeRotation;
+        bool horizontalAngleVisible = coneRotation.x - coneAngles.x / 2f <= angle && angle <= coneRotation.x + coneAngles.x / 2f;
+        return altitudeVisible && horizontalAngleVisible;
     }
 
     public void SetAltitude(float alt)
