@@ -9,6 +9,8 @@ public class EnemyHandler : Singleton<EnemyHandler>
     #region public serialised vars
     [SerializeField]
     UnitEnemy _enemyPrefabWorld;
+    [SerializeField]
+    Transform _spawnTransform;
     #endregion
 
 
@@ -20,7 +22,7 @@ public class EnemyHandler : Singleton<EnemyHandler>
     #region pub methods
     public UnitEnemy SpawnEnemy(Vector3 position)
     {
-        UnitEnemy newInst = Instantiate(_enemyPrefabWorld, position, Quaternion.identity, this.transform) as UnitEnemy;
+        UnitEnemy newInst = Instantiate(_enemyPrefabWorld, position, Quaternion.identity, _spawnTransform) as UnitEnemy;
         return newInst;
     }
 

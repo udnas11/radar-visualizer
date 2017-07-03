@@ -22,7 +22,10 @@ public class EditModesHandler : Singleton<EditModesHandler>
 
     public void OnClickForSpawn(Vector3 worldPos)
     {
-
+        if (_activeMode == EEditModeType.Create)
+        {
+            EnemyHandler.Instance.SpawnEnemy(worldPos);
+        }
     }
     #endregion
 
