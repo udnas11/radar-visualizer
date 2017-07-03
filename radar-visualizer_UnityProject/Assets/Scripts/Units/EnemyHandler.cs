@@ -40,8 +40,8 @@ public class EnemyHandler : Singleton<EnemyHandler>
 
         UnitDisplay unitDisplay = unit.UnitDisplay;
         _enemies.Remove(unit);
-        Destroy(unitDisplay);
-        Destroy(unit);
+        Destroy(unitDisplay.gameObject);
+        Destroy(unit.gameObject);
     }
     #endregion
 

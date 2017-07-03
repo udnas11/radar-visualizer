@@ -9,13 +9,19 @@ public class UnitEnemy : MonoBehaviour
     #region public serialised vars
     [HideInInspector]
     public UnitDisplay UnitDisplay;
+
+    [SerializeField]
+    LineRenderer _lineRenderer;
+    [SerializeField]
+    MeshRenderer _meshRenderer;
+    [SerializeField]
+    MeshRenderer _selectionSphere;
     #endregion
 
 
     #region private protected vars
-    LineRenderer _lineRenderer;
-    MeshRenderer _meshRenderer;
     bool _isVisible;
+    float _onClickDistanceFromCamera;
     #endregion
 
 
@@ -68,6 +74,38 @@ public class UnitEnemy : MonoBehaviour
 
 
     #region mono events
+    private void OnMouseEnter()
+    {
+        _selectionSphere.enabled = true;
+    }
+
+    private void OnMouseExit()
+    {
+        _selectionSphere.enabled = false;
+    }
+
+    private void OnMouseDrag()
+    {
+        if (EditModesHandler.Instance.ActiveMode == EEditModeType.Move)
+        {
+            CameraInputHandler camHandler = GlobalInputHandler.Instance.ActiveCamera;
+            Vector3 mousePos = Input.mousePosition;
+            //mousePos.z = Vector3.Distance(camHandler.Camera.transform.position, this.transform.position);
+            mousePos.z = _onClickDistanceFromCamera;
+            Vector3 mouseWorldPos = camHandler.Camera.ScreenToWorldPoint(mousePos);
+
+            this.transform.position = mouseWorldPos;
+        }
+    }
+
+    private void OnMouseDown()
+    {
+        if (EditModesHandler.Instance.ActiveMode == EEditModeType.Delete)
+            EnemyHandler.Instance.DeleteEnemy(this);
+        else if (EditModesHandler.Instance.ActiveMode == EEditModeType.Move)
+            _onClickDistanceFromCamera = Vector3.Distance(GlobalInputHandler.Instance.ActiveCamera.Camera.transform.position, this.transform.position);
+    }
+
     void Update()
     {
         UpdateVisual();
@@ -78,12 +116,6 @@ public class UnitEnemy : MonoBehaviour
         EnemyHandler.Instance.RegisterEnemy(this);
 
         UpdateVisual(true);
-    }
-
-    void Awake()
-    {
-        _lineRenderer = GetComponent<LineRenderer>();
-        _meshRenderer = GetComponent<MeshRenderer>();
     }
     #endregion
 }
