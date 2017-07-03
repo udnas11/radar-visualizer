@@ -7,15 +7,17 @@ using UnityEngine.Assertions;
 public class CameraInputHandler : MonoBehaviour
 {
 
-    public Action OnMouseEnterAction;
-    public Action OnMouseExitAction;
-    public Action<int> OnMouseButtonDownAction;
-    public Action<int, Vector2> OnMouseButtonDragAction; // mouse button, delta position
-    public Action<int> OnMouseButtonUpAction;
+    public event Action OnMouseEnterAction;
+    public event Action OnMouseExitAction;
+    public event Action<int> OnMouseButtonDownAction;
+    public event Action<int, Vector2> OnMouseButtonDragAction; // mouse button, delta position
+    public event Action<int> OnMouseButtonUpAction;
 
     #region public serialised vars
     [SerializeField]
     protected Camera _camera;
+    [SerializeField]
+    LayerMask _raycastLayers;
     #endregion
 
 
@@ -27,10 +29,9 @@ public class CameraInputHandler : MonoBehaviour
 
 
     #region pub methods
-    public bool IsMouseOver()
-    {
-        return _isMouseOver;
-    }
+    public Camera Camera { get { return _camera; } }
+    public bool IsMouseOver { get { return _isMouseOver; } }
+    public int LayerMask { get { return _raycastLayers.value; } }
 
     protected bool GetIsMouseOver()
     {
@@ -46,6 +47,8 @@ public class CameraInputHandler : MonoBehaviour
     {
         if (OnMouseEnterAction != null)
             OnMouseEnterAction();
+
+        GlobalInputHandler.Instance.SetActiveCamera(this);
     }
 
     protected virtual void OnMouseExit()

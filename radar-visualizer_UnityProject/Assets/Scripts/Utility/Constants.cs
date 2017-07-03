@@ -20,3 +20,11 @@ static public class Constants
         static public readonly Color EnemyDisplayInvisible = new Color(1f, 0f, 0f, 0.5f);
     }
 }
+
+public enum EEditModeType
+{
+    None,
+    Create,
+    Move,
+    Delete
+}

@@ -6,11 +6,11 @@ using UnityEngine.Assertions;
 
 public class GlobalInputHandler : Singleton<GlobalInputHandler>
 {
-
     public event Action OnToggleTWS;
     public event Action<Vector2> OnCursorAxisChange;
     public event Action<float> OnDisplayZoomAxisChange;
     public event Action<float> OnRadarElevationAxisChange;
+    public event Action<Vector3> OnClickAreaTrigger;
 
     #region public serialised vars
     [SerializeField]
@@ -19,10 +19,22 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
 
 
     #region private protected vars
+    CameraInputHandler _activeCameraHandler = null;
     #endregion
 
 
     #region pub methods
+    public CameraInputHandler ActiveCamera { get { return _activeCameraHandler; } }
+
+    public void SetActiveCamera(CameraInputHandler cameraHandler)
+    {
+        if (_activeCameraHandler != null)
+            _activeCameraHandler.OnMouseButtonDownAction -= OnMouseInput;
+
+        _activeCameraHandler = cameraHandler;
+
+        cameraHandler.OnMouseButtonDownAction += OnMouseInput;
+    }
     #endregion
 
 
@@ -34,6 +46,21 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
 
 
     #region events
+    private void OnMouseInput(int mouseBtn)
+    {
+        if (mouseBtn != 0)
+            return;
+
+        Camera cam = _activeCameraHandler.Camera;
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        bool success = Physics.Raycast(ray, out hit, Mathf.Infinity, _activeCameraHandler.LayerMask);
+        if (success)
+        {
+            if (OnClickAreaTrigger != null)
+                OnClickAreaTrigger(hit.point);
+        }
+    }
     #endregion
 
 
