@@ -25,6 +25,11 @@ public class UnitDisplay : MonoBehaviour
     Image _imageHeadingLine;
     [SerializeField]
     Text _textAltitude;
+
+    [SerializeField, Space]
+    Sprite _spriteTWS;
+    [SerializeField]
+    Sprite _spriteSTT;
     #endregion
 
 
@@ -65,11 +70,13 @@ public class UnitDisplay : MonoBehaviour
             case EUnitDisplayType.TWS:
                 _squareColor = Constants.Colors.EnemyDisplayTWS;
                 _imageHeadingLine.enabled = true;
+                _imageHeadingLine.sprite = _spriteTWS;
                 _textAltitude.enabled = true;
                 break;
             case EUnitDisplayType.STT:
                 _squareColor = Color.clear;
                 _imageHeadingLine.enabled = true;
+                _imageHeadingLine.sprite = _spriteSTT;
                 _textAltitude.enabled = false;
                 break;
         }
@@ -79,27 +86,22 @@ public class UnitDisplay : MonoBehaviour
 
 
     #region private protected methods
-    IEnumerator UpdateToMirrorWorld()
+    void UpdateToMirrorWorld()
     {
-        for (;;)
-        {
-            float angle, distance;
-            Vector2 displayPos = RadarDisplayController.Instance.TransformWorldToDisplay(WorldUnit.transform.position, out angle, out distance);
+        float angle, distance;
+        Vector2 displayPos = RadarDisplayController.Instance.TransformWorldToDisplay(WorldUnit.transform.position, out angle, out distance);
 
-            _rt.anchoredPosition = displayPos;
+        _rt.anchoredPosition = displayPos;
 
-            //float rot = WorldUnit.transform.rotation.eulerAngles.y;
-            //_imageHeadingLine.transform.localRotation = Quaternion.Euler(0f, 0f, -rot);
+        //float rot = WorldUnit.transform.rotation.eulerAngles.y;
+        //_imageHeadingLine.transform.localRotation = Quaternion.Euler(0f, 0f, -rot);
 
-            bool fitsDisplay = DoesFitDisplay();
-            _imageSquare.enabled = fitsDisplay;
-            _imageHeadingLine.gameObject.SetActive(fitsDisplay);
+        bool fitsDisplay = DoesFitDisplay();
+        _imageSquare.enabled = fitsDisplay;
+        _imageHeadingLine.gameObject.SetActive(fitsDisplay);
 
-            float alt = WorldUnit.transform.position.y;
-            _textAltitude.text = Math.NMtoAngels(alt).ToString("0.");
-
-            yield return new WaitForSeconds(1f);
-        }
+        float alt = WorldUnit.transform.position.y;
+        _textAltitude.text = Math.NMtoAngels(alt).ToString("0.");
     }
     #endregion
 
@@ -134,9 +136,12 @@ public class UnitDisplay : MonoBehaviour
     private void Start()
     {
         RadarDisplayController.Instance.OnRadarTypeChange += OnRadarScanModeChanged;
-        OnRadarScanModeChanged(RadarDisplayController.Instance.ScanType); // applying radar scan mode during run-time instantiation
+        OnRadarScanModeChanged(RadarDisplayController.Instance.ScanType); // applying radar scan mode during run-time instantiation        \
+    }
 
-        StartCoroutine(UpdateToMirrorWorld());
+    private void Update()
+    {
+        UpdateToMirrorWorld();
     }
     #endregion
 }
