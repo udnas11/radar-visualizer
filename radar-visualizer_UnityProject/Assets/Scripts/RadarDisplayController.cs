@@ -7,9 +7,18 @@ using UnityEngine.Assertions;
 
 public class RadarDisplayController : Singleton<RadarDisplayController>
 {
+
+    public enum ERadarType
+    {
+        RWS,
+        TWS,
+        STT
+    }
+
     public event Action<Vector3, float> OnCursorPositionUpdate; // worldspace, angle left/right
     public event Action<Vector2> OnRadarConeAngleChange;
     public event Action<Vector2> OnRadarConeRotationChange;
+    public event Action<ERadarType> OnRadarTypeChange;
 
     #region public serialised vars
     [SerializeField, Header("Cursor")]
@@ -43,9 +52,11 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     int _zoomFactor = 80;
     float _cursorDistance = 40f;
     Vector2 _coneAngles;
-    bool _isTWS = false;
+    ERadarType _type = ERadarType.RWS;
     Vector2 _coneRotation = Vector2.zero;
     Vector2 _altitudeLimits;
+    UnitEnemy _enemySTT;
+    List<UnitEnemy> _enemiesTWS = new List<UnitEnemy>();
 
     Vector2 _cursorAxis = Vector2.zero;
     float _elevationAxis = 0;
@@ -57,6 +68,9 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     public Vector2 ConeAngles { get { return _coneAngles; } }
     public Vector2 ConeRotation { get { return _coneRotation; } }
     public Vector2 AltitudeLimits { get { return _altitudeLimits; } }
+    public ERadarType ScanType { get { return _type; } }
+    public UnitEnemy EnemySTT { get { return _enemySTT; } }
+    public List<UnitEnemy> EnemiesTWS { get { return _enemiesTWS; } }
 
     public Vector3 TransformDisplayToWorld(Vector2 position, out float angle)
     {
@@ -154,7 +168,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     {
         float lastConeRotationX = _coneRotation.x;
         float areaSize = Constants.DisplayAreaSize;
-        if (_isTWS == false)
+        if (_type == ERadarType.RWS)
         {
             _circleBL.pivot = new Vector2(0f, 0f);
             _circleBL.anchoredPosition = new Vector2(-areaSize / 2, 0f);
@@ -162,7 +176,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
             _circleBR.anchoredPosition = new Vector2(areaSize / 2, 0f);
             _coneRotation.x = 0f;
         }
-        else
+        else if (_type == ERadarType.TWS)
         {
             float cursorPos = Mathf.Clamp(_cursor.anchoredPosition.x, -areaSize / 4f, areaSize / 4f);
             float angleHorizontal;
@@ -174,6 +188,10 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
             _circleBR.pivot = new Vector2(0.5f, 0f);
             _circleBR.anchoredPosition = new Vector2(cursorPos + areaSize / 4f, 0f);
+        }
+        else //if (_type == ERadarType.STT)
+        {
+            Debug.LogAssertion("Not implemented");
         }
 
         if (_coneRotation.x != lastConeRotationX)
@@ -209,15 +227,39 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     void OnToggleTWS()
     {
-        _isTWS = !_isTWS;
+        switch (_type)
+        {
+            case ERadarType.RWS:
+                _type = ERadarType.TWS;
+                break;
+            case ERadarType.TWS:
+                _type = _enemiesTWS.Count > 0 ? ERadarType.STT : ERadarType.RWS;
+                break;
+            // nothing happens during STT
+        }
 
-        _modeText.text = _isTWS ? "TWS" : "RWS";
+        _modeText.text = _type.ToString();
 
         UpdateHorizontalZone();
 
-        _coneAngles = _isTWS ? Constants.RadarConfig.TWSRadarConeAngles : Constants.RadarConfig.LRSRadarConeAngles;
+        switch (_type)
+        {
+            case ERadarType.RWS:
+                _coneAngles = Constants.RadarConfig.LRSRadarConeAngles;
+                break;
+            case ERadarType.TWS:
+                _coneAngles = Constants.RadarConfig.TWSRadarConeAngles;
+                break;
+            case ERadarType.STT:
+                _coneAngles = Constants.RadarConfig.STTRadarConeAngles;
+                break;
+        }
+
         if (OnRadarConeAngleChange != null)
             OnRadarConeAngleChange(_coneAngles);
+
+        if (OnRadarTypeChange != null)
+            OnRadarTypeChange(_type);
     }
     #endregion
 
@@ -272,7 +314,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         GUILayout.BeginVertical("Box");
         GUILayout.Label("Zoom: " + _zoomFactor);
         GUILayout.Label("Cone angles: " + _coneAngles);
-        GUILayout.Label("TWS: " + _isTWS);
+        GUILayout.Label("Type: " + _type.ToString());
         GUILayout.Label("Cone rotation: " + _coneRotation);
         GUILayout.Label("Cursor distance: " + _cursorDistance);
         GUILayout.EndVertical();

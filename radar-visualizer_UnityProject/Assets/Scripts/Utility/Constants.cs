@@ -18,6 +18,7 @@ static public class Constants
     static public class Colors
     {
         static public readonly Color EnemyDisplayInvisible = new Color(1f, 0f, 0f, 0.5f);
+        static public readonly Color EnemyDisplayTWS = new Color(0f, 1f, 0f, 0.5f);
     }
 }
 

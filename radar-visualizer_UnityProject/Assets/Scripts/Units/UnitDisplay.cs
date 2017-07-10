@@ -7,9 +7,22 @@ using UnityEngine.UI;
 
 public class UnitDisplay : MonoBehaviour
 {
+
+    public enum EUnitDisplayType
+    {
+        RWS,
+        TWS,
+        STT
+    }
+
     #region public serialised vars
     [HideInInspector]
     public UnitEnemy WorldUnit;
+
+    [SerializeField]
+    Image _imageSquare;
+    [SerializeField]
+    Image _imageHeadingLine;
     #endregion
 
 
@@ -17,7 +30,7 @@ public class UnitDisplay : MonoBehaviour
     RectTransform _rt;
     bool _isVisible;
 
-    Image _image;
+    Color _squareColor = Color.green;
     #endregion
 
 
@@ -34,7 +47,27 @@ public class UnitDisplay : MonoBehaviour
     {
         _isVisible = newState;
 
-        _image.color = _isVisible ? Color.green : Constants.Colors.EnemyDisplayInvisible;
+        _imageSquare.color = _isVisible ? _squareColor : Constants.Colors.EnemyDisplayInvisible;
+    }
+
+    public void SetDisplayType(EUnitDisplayType newType)
+    {
+        switch (newType)
+        {
+            case EUnitDisplayType.RWS:
+                _squareColor = Color.green;
+                _imageHeadingLine.enabled = false;
+                break;
+            case EUnitDisplayType.TWS:
+                _squareColor = Constants.Colors.EnemyDisplayTWS;
+                _imageHeadingLine.enabled = true;
+                break;
+            case EUnitDisplayType.STT:
+                _squareColor = Color.clear;
+                _imageHeadingLine.enabled = true;
+                break;
+        }
+        _imageSquare.color = _isVisible ? _squareColor : Constants.Colors.EnemyDisplayInvisible;
     }
     #endregion
 
@@ -47,12 +80,34 @@ public class UnitDisplay : MonoBehaviour
 
         _rt.anchoredPosition = displayPos;
 
-        _image.enabled = DoesFitDisplay();
+        //float rot = WorldUnit.transform.rotation.eulerAngles.y;
+        //_imageHeadingLine.transform.localRotation = Quaternion.Euler(0f, 0f, -rot);
+
+        bool fitsDisplay = DoesFitDisplay();
+        _imageSquare.enabled = fitsDisplay;
+        _imageHeadingLine.gameObject.SetActive(fitsDisplay);
     }
     #endregion
 
 
     #region events
+    private void OnRadarScanModeChanged(RadarDisplayController.ERadarType newType)
+    {
+        switch (newType)
+        {
+            case RadarDisplayController.ERadarType.RWS:
+                SetDisplayType(EUnitDisplayType.RWS);
+                break;
+            case RadarDisplayController.ERadarType.TWS:
+                bool marked = RadarDisplayController.Instance.EnemiesTWS.Contains(WorldUnit);
+                SetDisplayType(marked ? EUnitDisplayType.STT : EUnitDisplayType.TWS);
+                break;
+            case RadarDisplayController.ERadarType.STT:
+                bool locked = RadarDisplayController.Instance.EnemySTT == WorldUnit;
+                SetDisplayType(locked ? EUnitDisplayType.STT : EUnitDisplayType.RWS);
+                break;
+        }
+    }
     #endregion
 
 
@@ -60,7 +115,12 @@ public class UnitDisplay : MonoBehaviour
     private void Awake()
     {
         _rt = GetComponent<RectTransform>();
-        _image = GetComponent<Image>();
+    }
+
+    private void Start()
+    {
+        RadarDisplayController.Instance.OnRadarTypeChange += OnRadarScanModeChanged;
+        OnRadarScanModeChanged(RadarDisplayController.Instance.ScanType); // applying radar scan mode during run-time instantiation
     }
 
     private void Update()

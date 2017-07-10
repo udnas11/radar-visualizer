@@ -22,7 +22,7 @@ public class EnemyHandler : Singleton<EnemyHandler>
     #region pub methods
     public UnitEnemy SpawnEnemy(Vector3 position)
     {
-        UnitEnemy newInst = Instantiate(_enemyPrefabWorld, position, Quaternion.identity, _spawnTransform) as UnitEnemy;
+        UnitEnemy newInst = Instantiate(_enemyPrefabWorld, position, Quaternion.Euler(0f, 180f, 0f), _spawnTransform) as UnitEnemy;
         return newInst;
     }
 
