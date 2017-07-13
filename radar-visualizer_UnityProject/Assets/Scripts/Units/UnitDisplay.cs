@@ -12,7 +12,8 @@ public class UnitDisplay : MonoBehaviour
     {
         RWS,
         TWS,
-        STT
+        STT,
+        TWSMarked
     }
 
     #region public serialised vars
@@ -30,6 +31,8 @@ public class UnitDisplay : MonoBehaviour
     Sprite _spriteTWS;
     [SerializeField]
     Sprite _spriteSTT;
+    [SerializeField]
+    Sprite _spriteTWSMarked;
     #endregion
 
 
@@ -69,18 +72,28 @@ public class UnitDisplay : MonoBehaviour
                 _squareColor = Color.green;
                 _imageHeadingLine.enabled = false;
                 _textAltitude.enabled = false;
+                _imageSquare.sprite = null;
                 break;
             case EUnitDisplayType.TWS:
                 _squareColor = Constants.Colors.EnemyDisplayTWS;
                 _imageHeadingLine.enabled = true;
                 _imageHeadingLine.sprite = _spriteTWS;
                 _textAltitude.enabled = true;
+                _imageSquare.sprite = null;
                 break;
             case EUnitDisplayType.STT:
                 _squareColor = Color.clear;
                 _imageHeadingLine.enabled = true;
                 _imageHeadingLine.sprite = _spriteSTT;
                 _textAltitude.enabled = false;
+                _imageSquare.sprite = null;
+                break;
+            case EUnitDisplayType.TWSMarked:
+                _squareColor = Color.green;
+                _imageHeadingLine.enabled = true;
+                _imageHeadingLine.sprite = _spriteTWS;
+                _textAltitude.enabled = true;
+                _imageSquare.sprite = _spriteTWSMarked;
                 break;
         }
         SetVisible(_isVisible);
@@ -118,8 +131,9 @@ public class UnitDisplay : MonoBehaviour
                 SetDisplayType(EUnitDisplayType.RWS);
                 break;
             case RadarDisplayController.ERadarType.TWS:
-                bool marked = RadarDisplayController.Instance.EnemiesTWS.Contains(WorldUnit);
-                SetDisplayType(marked ? EUnitDisplayType.STT : EUnitDisplayType.TWS);
+                //bool marked = RadarDisplayController.Instance.EnemiesTWS.Contains(WorldUnit);
+                //SetDisplayType(marked ? EUnitDisplayType.STT : EUnitDisplayType.TWS);
+                SetDisplayType(EUnitDisplayType.TWS);
                 break;
             case RadarDisplayController.ERadarType.STT:
                 bool locked = RadarDisplayController.Instance.EnemySTT == WorldUnit;

@@ -167,6 +167,7 @@ MonoBehaviour:
   _textAltitude: {fileID: 114525324217993622}
   _spriteTWS: {fileID: 21300000, guid: fc41d8b3da3bf574b8bb750a61481675, type: 3}
   _spriteSTT: {fileID: 21300000, guid: 9e89ec9b1344b9e41b91091543d2b755, type: 3}
+  _spriteTWSMarked: {fileID: 21300000, guid: dce692147917a0d41b510df70e92c7d7, type: 3}
 --- !u!222 &222617193869793226
 CanvasRenderer:
   m_ObjectHideFlags: 1

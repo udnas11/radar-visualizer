@@ -189,12 +189,33 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         else if (_type == ERadarType.TWS)
         {
             float cursorPos = Mathf.Clamp(_cursor.anchoredPosition.x, -areaSize / 4f, areaSize / 4f);
+            float centerRotation;
+            if (_enemiesTWS.Count == 0)
+                centerRotation = cursorPos;
+            else
+            {
+                float limLeft = 1000f;
+                float limRight = -1000f;
+                for (int i = 0; i < _enemiesTWS.Count; i++)
+                {
+                    float pos = _enemiesTWS[i].UnitDisplay.RectTransform.anchoredPosition.x;
+                    if (pos < limLeft)
+                        limLeft = pos;
+                    if (pos > limRight)
+                        limRight = pos;
+                }
+
+                limLeft += areaSize / 4f - 10f;
+                limRight -= areaSize / 4f - 10f;
+
+                centerRotation = Mathf.Clamp(cursorPos, limRight, limLeft);
+            }
             float angleHorizontal;
-            TransformDisplayToWorld(new Vector2(cursorPos, 10f), out angleHorizontal);
+            TransformDisplayToWorld(new Vector2(centerRotation, 10f), out angleHorizontal);
             _coneRotation.x = angleHorizontal;
             
-            _circleBL.anchoredPosition = new Vector2(cursorPos - areaSize / 4f, 0f);
-            _circleBR.anchoredPosition = new Vector2(cursorPos + areaSize / 4f, 0f);
+            _circleBL.anchoredPosition = new Vector2(centerRotation - areaSize / 4f, 0f);
+            _circleBR.anchoredPosition = new Vector2(centerRotation + areaSize / 4f, 0f);
         }
         else //if (_type == ERadarType.STT)
         {
@@ -204,6 +225,56 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         if (_coneRotation.x != lastConeRotationX)
             if (OnRadarConeRotationChange != null)
                 OnRadarConeRotationChange(_coneRotation);
+    }
+
+    void SetShowPrimaryTarget(bool show)
+    {
+        _vVertical.gameObject.SetActive(show);
+        _vHorizontal.gameObject.SetActive(show);
+        _distanceToTargetText.gameObject.SetActive(show);
+    }
+
+    void UpdateVisualsPrimaryTarget(UnitEnemy enemy)
+    {
+        if (enemy == null)
+        {
+            Debug.LogError("Attempting update visuals primary target for null");
+            return;
+        }
+
+        //horizontal
+        float banditPos = enemy.UnitDisplay.RectTransform.anchoredPosition.x;
+        _vHorizontal.anchoredPosition = new Vector2(banditPos, 0f);
+
+        //vertical
+        float altitude = Math.NMtoAngels(enemy.transform.position.y);
+        _vVerticalText.text = altitude.ToString("#0.0").Replace(".", " - ");
+        float t = Mathf.InverseLerp(0f, 60f, altitude);
+        _vVertical.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
+
+        //distance
+        float dist = enemy.transform.position.magnitude;
+        _distanceToTargetText.text = dist.ToString("0.");
+    }
+
+    void UpdateWhenTWS()
+    {
+        //checking for deleted enemies
+        while (_enemiesTWS.Contains(null))
+        {
+            _enemiesTWS.Remove(null);
+
+            for (int i = 0; i < _enemiesTWS.Count; i++)
+                _enemiesTWS[i].UnitDisplay.SetDisplayType(i == 0 ? UnitDisplay.EUnitDisplayType.STT : UnitDisplay.EUnitDisplayType.TWSMarked);
+            SetShowPrimaryTarget(_enemiesTWS.Count > 0);
+        }
+        
+        //checking enemies who got out of frustrum
+        for (int i = _enemiesTWS.Count - 1 ; i >= 0; i--)
+        {
+            if (_enemiesTWS[i].IsVisible() == false)
+                RemoveEnemyFromTWS(_enemiesTWS[i]);
+        }
     }
 
     void UpdateWhenSTT()
@@ -219,21 +290,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
         //radar cone
         _coneRotation.x = Math.GetPointHorizontalAngle(_enemySTT.transform.position);
-        _coneRotation.y = Math.GetPointVerticalAngle(_enemySTT.transform.position - Player.Instance.transform.position);
-
-        //horizontal
-        float banditPos = _enemySTT.UnitDisplay.RectTransform.anchoredPosition.x;
-        _vHorizontal.anchoredPosition = new Vector2(banditPos, 0f);
-
-        //vertical
-        float altitude = Math.NMtoAngels(_enemySTT.transform.position.y);
-        _vVerticalText.text = altitude.ToString("#0.0").Replace(".", " - ");
-        float t = Mathf.InverseLerp(0f, 60f, altitude);
-        _vVertical.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
-
-        //distance
-        float dist = _enemySTT.transform.position.magnitude;
-        _distanceToTargetText.text = dist.ToString("0.");
+        _coneRotation.y = Math.GetPointVerticalAngle(_enemySTT.transform.position - Player.Instance.transform.position);        
         
         //check for fail
         if (_coneRotation != lastConeRotation)
@@ -256,8 +313,6 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         {
             case ERadarType.RWS:
                 _coneAngles = Constants.RadarConfig.LRSRadarConeAngles;
-                _vVertical.gameObject.SetActive(false);
-                _vHorizontal.gameObject.SetActive(false);
                 _altitudeMinText.gameObject.SetActive(true);
                 _altitudeMaxText.gameObject.SetActive(true);
                 _circleBL.gameObject.SetActive(true);
@@ -266,12 +321,13 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 _circleBL.pivot = new Vector2(0f, 0f);
                 _circleBR.pivot = new Vector2(1f, 0f);
 
-                _distanceToTargetText.gameObject.SetActive(false);
+                SetShowPrimaryTarget(false);
+
+                _enemySTT = null;
+                _enemiesTWS.Clear();
                 break;
             case ERadarType.TWS:
                 _coneAngles = Constants.RadarConfig.TWSRadarConeAngles;
-                _vVertical.gameObject.SetActive(false);
-                _vHorizontal.gameObject.SetActive(false);
                 _altitudeMinText.gameObject.SetActive(true);
                 _altitudeMaxText.gameObject.SetActive(true);
                 _circleBL.gameObject.SetActive(true);
@@ -280,18 +336,20 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 _circleBL.pivot = new Vector2(0.5f, 0f);
                 _circleBR.pivot = new Vector2(0.5f, 0f);
 
-                _distanceToTargetText.gameObject.SetActive(false);
+                SetShowPrimaryTarget(false);
+
+                _enemySTT = null;
                 break;
             case ERadarType.STT:
                 _coneAngles = Constants.RadarConfig.STTRadarConeAngles;
-                _vVertical.gameObject.SetActive(true);
-                _vHorizontal.gameObject.SetActive(true);
                 _altitudeMinText.gameObject.SetActive(false);
                 _altitudeMaxText.gameObject.SetActive(false);
                 _circleBL.gameObject.SetActive(false);
                 _circleBR.gameObject.SetActive(false);
 
-                _distanceToTargetText.gameObject.SetActive(true);
+                SetShowPrimaryTarget(true);
+
+                _enemiesTWS.Clear();
                 break;
         }
 
@@ -328,6 +386,29 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
         return result != null ? result.WorldUnit : null;
     }
+
+    void AddEnemyToTWS(UnitEnemy unit)
+    {
+        _enemiesTWS.Add(unit);
+
+        for (int i = 0; i < _enemiesTWS.Count; i++)
+            _enemiesTWS[i].UnitDisplay.SetDisplayType(i == 0 ? UnitDisplay.EUnitDisplayType.STT : UnitDisplay.EUnitDisplayType.TWSMarked);
+
+        if (_enemiesTWS.Count > 0)
+            SetShowPrimaryTarget(true);
+    }
+
+    void RemoveEnemyFromTWS(UnitEnemy unit)
+    {
+        _enemiesTWS.Remove(unit);
+        unit.UnitDisplay.SetDisplayType(UnitDisplay.EUnitDisplayType.TWS);
+
+        for (int i = 0; i < _enemiesTWS.Count; i++)
+            _enemiesTWS[i].UnitDisplay.SetDisplayType(i == 0 ? UnitDisplay.EUnitDisplayType.STT : UnitDisplay.EUnitDisplayType.TWSMarked);
+
+        if (_enemiesTWS.Count == 0)
+            SetShowPrimaryTarget(false);
+    }
     #endregion
 
 
@@ -335,9 +416,9 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     void OnZoomInputChange(float axis)
     {
         if (axis > 0)
-            _zoomFactor *= 2;
-        else if (axis < 0)
             _zoomFactor /= 2;
+        else if (axis < 0)
+            _zoomFactor *= 2;
 
         _zoomFactor = Mathf.Clamp(_zoomFactor, 10, 160);
         _zoomText.text = _zoomFactor.ToString();
@@ -363,7 +444,13 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 SetScanType(ERadarType.TWS);
                 break;
             case ERadarType.TWS:
-                SetScanType(_enemiesTWS.Count > 0 ? ERadarType.STT : ERadarType.RWS);
+                if (_enemiesTWS.Count == 0)
+                    SetScanType(ERadarType.RWS);
+                else
+                {
+                    _enemySTT = _enemiesTWS[0];
+                    SetScanType(ERadarType.STT);
+                }
                 break;
             // nothing happens during STT
         }        
@@ -371,10 +458,11 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     private void OnLockPressed()
     {
+        UnitEnemy selectedEnemy = null;
         switch (_type)
         {
             case ERadarType.RWS:
-                UnitEnemy selectedEnemy = GetEnemyUnderCursor();
+                selectedEnemy = GetEnemyUnderCursor();
                 if (selectedEnemy != null)
                 {
                     _enemySTT = selectedEnemy;
@@ -382,6 +470,38 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 }
                 break;
             case ERadarType.TWS:
+                selectedEnemy = GetEnemyUnderCursor();
+                if (selectedEnemy != null)
+                {
+                    if (_enemiesTWS.Contains(selectedEnemy))
+                    {
+                        _enemySTT = selectedEnemy;
+                        SetScanType(ERadarType.STT);
+                    }
+                    else
+                    {
+                        if (_enemiesTWS.Count < 4)
+                            AddEnemyToTWS(selectedEnemy);
+                    }
+                }
+                break;
+            case ERadarType.STT:
+                SetScanType(ERadarType.RWS);
+                break;
+        }
+    }
+
+    private void OnUnlockPressed()
+    {
+        switch (_type)
+        {
+            case ERadarType.RWS:
+                // nothing
+                break;
+            case ERadarType.TWS:
+                UnitEnemy selectedEnemy = GetEnemyUnderCursor();
+                if (_enemiesTWS.Contains(selectedEnemy))
+                    RemoveEnemyFromTWS(selectedEnemy);
                 break;
             case ERadarType.STT:
                 SetScanType(ERadarType.RWS);
@@ -409,6 +529,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         GlobalInputHandler.Instance.OnDisplayZoomAxisChange += OnZoomInputChange;
         GlobalInputHandler.Instance.OnToggleTWS += OnToggleTWS;
         GlobalInputHandler.Instance.OnLockPressed += OnLockPressed;
+        GlobalInputHandler.Instance.OnUnlockPressed += OnUnlockPressed;
         GlobalInputHandler.Instance.OnRadarElevationAxisChange += OnRadarElevationInputChange;
 
         RadarConeController.Instance.SetConeAngles(_coneAngles, _coneRotation);
@@ -420,6 +541,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         if (_cursorAxis != Vector2.zero)
         {
             float areaSize = Constants.DisplayAreaSize;
+
             Vector2 move = _cursorAxis * _cursorMoveSpeed * Time.deltaTime;
             move = _cursor.anchoredPosition + move;
             move.x = Mathf.Clamp(move.x, -areaSize / 2, areaSize / 2);
@@ -440,7 +562,16 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         }
 
         if (_type == ERadarType.STT)
+        {
             UpdateWhenSTT();
+            UpdateVisualsPrimaryTarget(_enemySTT);
+        }
+        else if (_type == ERadarType.TWS)
+        {
+            UpdateWhenTWS();
+            if (_enemiesTWS.Count > 0)
+                UpdateVisualsPrimaryTarget(_enemiesTWS[0]);
+        }
     }
 
     private void OnGUI()
