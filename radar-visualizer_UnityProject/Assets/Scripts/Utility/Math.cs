@@ -43,4 +43,14 @@ public static class Math
     {
         return Mathf.Atan(worldSpace.x / worldSpace.z) * Mathf.Rad2Deg;
     }
+
+    /// <summary>
+    /// Returns the vertical angle of the unit relative to 0 0
+    /// </summary>
+    /// <param name="posRelativeToPlayer">Advis giving position relative to player (aka substract player's heght)</param>
+    /// <returns></returns>
+    static public float GetPointVerticalAngle(Vector3 posRelativeToPlayer)
+    {
+        return Mathf.Atan(posRelativeToPlayer.y / posRelativeToPlayer.z) * Mathf.Rad2Deg;
+    }
 }

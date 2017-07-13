@@ -42,6 +42,9 @@ public class UnitDisplay : MonoBehaviour
 
 
     #region pub methods
+    public RectTransform RectTransform { get { return _rt; } }
+    public bool IsVisible { get { return _isVisible; } }
+
     public bool DoesFitDisplay()
     {
         Vector2 pos = _rt.anchoredPosition;

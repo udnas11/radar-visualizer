@@ -20,6 +20,8 @@ public class EnemyHandler : Singleton<EnemyHandler>
 
 
     #region pub methods
+    public List<UnitEnemy> Enemies { get { return _enemies; } }
+
     public UnitEnemy SpawnEnemy(Vector3 position)
     {
         UnitEnemy newInst = Instantiate(_enemyPrefabWorld, position, Quaternion.Euler(0f, 180f, 0f), _spawnTransform) as UnitEnemy;

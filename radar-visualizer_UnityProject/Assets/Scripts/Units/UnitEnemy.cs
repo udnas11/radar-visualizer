@@ -55,7 +55,9 @@ public class UnitEnemy : MonoBehaviour
 
     public bool IsVisible()
     {
-        float distance = transform.position.magnitude;
+        Vector3 posOnGround = transform.position;
+        posOnGround.y = 0f;
+        float distance = posOnGround.magnitude;
         float alt = transform.position.y;
         Vector2 altitudeLimits = RadarDisplayController.Instance.GetAltitudeLimitsAtDistance(distance);
         bool altitudeVisible = altitudeLimits.x <= alt && alt <= altitudeLimits.y;

@@ -11,10 +11,13 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
     public event Action<float> OnDisplayZoomAxisChange;
     public event Action<float> OnRadarElevationAxisChange;
     public event Action<Vector3> OnClickAreaTrigger;
+    public event Action OnLockPressed;
 
     #region public serialised vars
     [SerializeField]
-    KeyCode _toggleTWS;
+    KeyCode _toggleTWSKey;
+    [SerializeField]
+    KeyCode _lockKey;
     #endregion
 
 
@@ -72,9 +75,13 @@ public class GlobalInputHandler : Singleton<GlobalInputHandler>
 
     private void Update()
     {
-        if (Input.GetKeyDown(_toggleTWS))
+        if (Input.GetKeyDown(_toggleTWSKey))
             if (OnToggleTWS != null)
                 OnToggleTWS();
+
+        if (Input.GetKeyDown(_lockKey))
+            if (OnLockPressed != null)
+                OnLockPressed();
         
         Vector2 newCurAxis = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         if (newCurAxis != _cursorAxis)

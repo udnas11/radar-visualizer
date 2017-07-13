@@ -40,6 +40,12 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     RectTransform _circleBL;
     [SerializeField]
     RectTransform _circleBR;
+    [SerializeField]
+    RectTransform _vVertical;
+    [SerializeField]
+    Text _vVerticalText;
+    [SerializeField]
+    RectTransform _vHorizontal;
 
     [SerializeField, Header("Unit management")]
     UnitDisplay _prefabUnitDisplay;
@@ -60,6 +66,9 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     Vector2 _cursorAxis = Vector2.zero;
     float _elevationAxis = 0;
+
+    RectTransform _altitudeMaxTextRT;
+    RectTransform _altitudeMinTextRT;
     #endregion
 
 
@@ -121,7 +130,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         //float newAngle = Mathf.Clamp(_coneRotation.y + _elevationAxis * Time.deltaTime * _elevationRotateSpeed, -30f, 30f);
         _coneRotation.y = degrees;
 
-        UpdateAltitudeText();
+        UpdateVerticalZone();
 
         if (OnRadarConeRotationChange != null)
             OnRadarConeRotationChange(_coneRotation);
@@ -138,7 +147,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         Vector3 pos = TransformDisplayToWorld(_cursor.anchoredPosition, out angle);
         _cursorDistance = pos.magnitude;
 
-        UpdateAltitudeText();
+        UpdateVerticalZone();
 
         UpdateHorizontalZone();
 
@@ -146,22 +155,23 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
             OnCursorPositionUpdate(pos, angle);
     }
 
-    void UpdateAltitudeText()
+    void UpdateVerticalZone()
     {
-        _altitudeLimits = GetAltitudeLimitsAtDistance(_cursorDistance);
-        Vector2 altitudeLimitsAngels = new Vector2(Mathf.Clamp(Math.NMtoAngels(_altitudeLimits.x), 0f, 60f), Mathf.Clamp(Math.NMtoAngels(_altitudeLimits.y), 0f, 60f));
-        _altitudeMaxText.text = ((int)altitudeLimitsAngels.y).ToString();
-        _altitudeMinText.text = ((int)altitudeLimitsAngels.x).ToString();
+        if (_type != ERadarType.STT) //stt handled in update
+        {
+            _altitudeLimits = GetAltitudeLimitsAtDistance(_cursorDistance);
+            Vector2 altitudeLimitsAngels = new Vector2(Mathf.Clamp(Math.NMtoAngels(_altitudeLimits.x), 0f, 60f), Mathf.Clamp(Math.NMtoAngels(_altitudeLimits.y), 0f, 60f));
+            _altitudeMaxText.text = ((int)altitudeLimitsAngels.y).ToString();
+            _altitudeMinText.text = ((int)altitudeLimitsAngels.x).ToString();
 
-        //pos up
-        RectTransform rt = _altitudeMaxText.GetComponent<RectTransform>();
-        float t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.y);
-        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
+            //pos up
+            float t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.y);
+            _altitudeMaxTextRT.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
 
-        //pos down
-        rt = _altitudeMinText.GetComponent<RectTransform>();
-        t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.x);
-        rt.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
+            //pos down
+            t = Mathf.InverseLerp(0f, 60f, altitudeLimitsAngels.x);
+            _altitudeMinTextRT.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
+        }
     }
     
     void UpdateHorizontalZone()
@@ -170,9 +180,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         float areaSize = Constants.DisplayAreaSize;
         if (_type == ERadarType.RWS)
         {
-            _circleBL.pivot = new Vector2(0f, 0f);
             _circleBL.anchoredPosition = new Vector2(-areaSize / 2, 0f);
-            _circleBR.pivot = new Vector2(1f, 0f);
             _circleBR.anchoredPosition = new Vector2(areaSize / 2, 0f);
             _coneRotation.x = 0f;
         }
@@ -182,21 +190,124 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
             float angleHorizontal;
             TransformDisplayToWorld(new Vector2(cursorPos, 10f), out angleHorizontal);
             _coneRotation.x = angleHorizontal;
-
-            _circleBL.pivot = new Vector2(0.5f, 0f);
+            
             _circleBL.anchoredPosition = new Vector2(cursorPos - areaSize / 4f, 0f);
-
-            _circleBR.pivot = new Vector2(0.5f, 0f);
             _circleBR.anchoredPosition = new Vector2(cursorPos + areaSize / 4f, 0f);
         }
         else //if (_type == ERadarType.STT)
         {
-            Debug.LogAssertion("Not implemented");
+            // handled in Update
         }
 
         if (_coneRotation.x != lastConeRotationX)
             if (OnRadarConeRotationChange != null)
                 OnRadarConeRotationChange(_coneRotation);
+    }
+
+    void UpdateWhenSTT()
+    {
+        Vector2 lastConeRotation = _coneRotation;
+
+        //horizontal
+        float banditPos = _enemySTT.UnitDisplay.RectTransform.anchoredPosition.x;
+        _coneRotation.x = Math.GetPointHorizontalAngle(_enemySTT.transform.position);
+        _coneRotation.y = Math.GetPointVerticalAngle(_enemySTT.transform.position - Player.Instance.transform.position);
+
+        _vHorizontal.anchoredPosition = new Vector2(banditPos, 0f);
+
+        //vertical
+        float altitude = Math.NMtoAngels(_enemySTT.transform.position.y);
+        _vVerticalText.text = altitude.ToString("0.");
+        
+        float t = Mathf.InverseLerp(0f, 60f, altitude);
+        _vVertical.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
+        
+        //check for fail
+        if (_coneRotation != lastConeRotation)
+        {
+            if (Mathf.Abs(_coneRotation.x) <= Constants.RadarConfig.GimbalLimits.x &&
+                Mathf.Abs(_coneRotation.y) <= Constants.RadarConfig.GimbalLimits.y)
+            {
+                if (OnRadarConeRotationChange != null)
+                    OnRadarConeRotationChange(_coneRotation);
+            }
+            else
+                SetScanType(ERadarType.RWS);
+        }
+    }
+
+    void SetScanType(ERadarType newType)
+    {
+        _type = newType;
+        switch (_type)
+        {
+            case ERadarType.RWS:
+                _coneAngles = Constants.RadarConfig.LRSRadarConeAngles;
+                _vVertical.gameObject.SetActive(false);
+                _vHorizontal.gameObject.SetActive(false);
+                _altitudeMinText.gameObject.SetActive(true);
+                _altitudeMaxText.gameObject.SetActive(true);
+                _circleBL.gameObject.SetActive(true);
+                _circleBR.gameObject.SetActive(true);
+                
+                _circleBL.pivot = new Vector2(1f, 0f);
+                _circleBR.pivot = new Vector2(1f, 0f);
+                break;
+            case ERadarType.TWS:
+                _coneAngles = Constants.RadarConfig.TWSRadarConeAngles;
+                _vVertical.gameObject.SetActive(false);
+                _vHorizontal.gameObject.SetActive(false);
+                _altitudeMinText.gameObject.SetActive(true);
+                _altitudeMaxText.gameObject.SetActive(true);
+                _circleBL.gameObject.SetActive(true);
+                _circleBR.gameObject.SetActive(true);
+
+                _circleBL.pivot = new Vector2(0.5f, 0f);
+                _circleBR.pivot = new Vector2(0.5f, 0f);
+                break;
+            case ERadarType.STT:
+                _coneAngles = Constants.RadarConfig.STTRadarConeAngles;
+                _vVertical.gameObject.SetActive(true);
+                _vHorizontal.gameObject.SetActive(true);
+                _altitudeMinText.gameObject.SetActive(false);
+                _altitudeMaxText.gameObject.SetActive(false);
+                _circleBL.gameObject.SetActive(false);
+                _circleBR.gameObject.SetActive(false);
+                break;
+        }
+
+        _modeText.text = _type.ToString();
+        UpdateHorizontalZone();
+        UpdateVerticalZone();
+
+        if (OnRadarConeAngleChange != null)
+            OnRadarConeAngleChange(_coneAngles);
+
+        if (OnRadarTypeChange != null)
+            OnRadarTypeChange(_type);
+    }
+
+    UnitEnemy GetEnemyUnderCursor()
+    {
+        List<UnitEnemy> enemies = EnemyHandler.Instance.Enemies;
+        float dist = Constants.DisplayLockRange;
+        UnitDisplay result = null;
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            UnitDisplay ud = enemies[i].UnitDisplay;
+            if (ud.IsVisible)
+            {
+                float distThis = Vector2.Distance(_cursor.anchoredPosition, ud.RectTransform.anchoredPosition);
+                if (distThis < dist)
+                {
+                    dist = distThis;
+                    result = ud;
+                }
+            }
+        }
+
+        return result != null ? result.WorldUnit : null;
     }
     #endregion
 
@@ -230,36 +341,33 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         switch (_type)
         {
             case ERadarType.RWS:
-                _type = ERadarType.TWS;
+                SetScanType(ERadarType.TWS);
                 break;
             case ERadarType.TWS:
-                _type = _enemiesTWS.Count > 0 ? ERadarType.STT : ERadarType.RWS;
+                SetScanType(_enemiesTWS.Count > 0 ? ERadarType.STT : ERadarType.RWS);
                 break;
             // nothing happens during STT
-        }
+        }        
+    }
 
-        _modeText.text = _type.ToString();
-
-        UpdateHorizontalZone();
-
+    private void OnLockPressed()
+    {
         switch (_type)
         {
             case ERadarType.RWS:
-                _coneAngles = Constants.RadarConfig.LRSRadarConeAngles;
+                UnitEnemy selectedEnemy = GetEnemyUnderCursor();
+                if (selectedEnemy != null)
+                {
+                    _enemySTT = selectedEnemy;
+                    SetScanType(ERadarType.STT);
+                }
                 break;
             case ERadarType.TWS:
-                _coneAngles = Constants.RadarConfig.TWSRadarConeAngles;
                 break;
             case ERadarType.STT:
-                _coneAngles = Constants.RadarConfig.STTRadarConeAngles;
+                SetScanType(ERadarType.RWS);
                 break;
         }
-
-        if (OnRadarConeAngleChange != null)
-            OnRadarConeAngleChange(_coneAngles);
-
-        if (OnRadarTypeChange != null)
-            OnRadarTypeChange(_type);
     }
     #endregion
 
@@ -268,6 +376,9 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     private void Awake()
     {
         RegisterSingleton(this);
+
+        _altitudeMaxTextRT = _altitudeMaxText.GetComponent<RectTransform>();
+        _altitudeMinTextRT = _altitudeMinText.GetComponent<RectTransform>();
 
         _coneAngles = Constants.RadarConfig.LRSRadarConeAngles;
         _coneRotation = Vector2.zero;
@@ -278,10 +389,11 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         GlobalInputHandler.Instance.OnCursorAxisChange += OnCursorInputChange;
         GlobalInputHandler.Instance.OnDisplayZoomAxisChange += OnZoomInputChange;
         GlobalInputHandler.Instance.OnToggleTWS += OnToggleTWS;
+        GlobalInputHandler.Instance.OnLockPressed += OnLockPressed;
         GlobalInputHandler.Instance.OnRadarElevationAxisChange += OnRadarElevationInputChange;
 
         RadarConeController.Instance.SetConeAngles(_coneAngles, _coneRotation);
-        UpdateAltitudeText();
+        UpdateVerticalZone();
     }
 
     private void Update()
@@ -307,6 +419,9 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 OnRadarConeRotationChange(_coneRotation);
                 */
         }
+
+        if (_type == ERadarType.STT)
+            UpdateWhenSTT();
     }
 
     private void OnGUI()
