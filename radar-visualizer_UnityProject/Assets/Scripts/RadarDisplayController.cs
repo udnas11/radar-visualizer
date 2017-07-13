@@ -46,6 +46,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     Text _vVerticalText;
     [SerializeField]
     RectTransform _vHorizontal;
+    [SerializeField]
+    Text _distanceToTargetText;
 
     [SerializeField, Header("Unit management")]
     UnitDisplay _prefabUnitDisplay;
@@ -206,21 +208,32 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     void UpdateWhenSTT()
     {
+        if (_enemySTT == null)
+        {
+            Debug.Log("tracked target deleted");
+            SetScanType(ERadarType.RWS);
+            return;
+        }
+
         Vector2 lastConeRotation = _coneRotation;
 
-        //horizontal
-        float banditPos = _enemySTT.UnitDisplay.RectTransform.anchoredPosition.x;
+        //radar cone
         _coneRotation.x = Math.GetPointHorizontalAngle(_enemySTT.transform.position);
         _coneRotation.y = Math.GetPointVerticalAngle(_enemySTT.transform.position - Player.Instance.transform.position);
 
+        //horizontal
+        float banditPos = _enemySTT.UnitDisplay.RectTransform.anchoredPosition.x;
         _vHorizontal.anchoredPosition = new Vector2(banditPos, 0f);
 
         //vertical
         float altitude = Math.NMtoAngels(_enemySTT.transform.position.y);
-        _vVerticalText.text = altitude.ToString("0.");
-        
+        _vVerticalText.text = altitude.ToString("#0.0").Replace(".", " - ");
         float t = Mathf.InverseLerp(0f, 60f, altitude);
         _vVertical.anchoredPosition = new Vector2(0f, Mathf.Lerp(0, Constants.DisplayAreaSize / 2f, t));
+
+        //distance
+        float dist = _enemySTT.transform.position.magnitude;
+        _distanceToTargetText.text = dist.ToString("0.");
         
         //check for fail
         if (_coneRotation != lastConeRotation)
@@ -250,8 +263,10 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 _circleBL.gameObject.SetActive(true);
                 _circleBR.gameObject.SetActive(true);
                 
-                _circleBL.pivot = new Vector2(1f, 0f);
+                _circleBL.pivot = new Vector2(0f, 0f);
                 _circleBR.pivot = new Vector2(1f, 0f);
+
+                _distanceToTargetText.gameObject.SetActive(false);
                 break;
             case ERadarType.TWS:
                 _coneAngles = Constants.RadarConfig.TWSRadarConeAngles;
@@ -264,6 +279,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
                 _circleBL.pivot = new Vector2(0.5f, 0f);
                 _circleBR.pivot = new Vector2(0.5f, 0f);
+
+                _distanceToTargetText.gameObject.SetActive(false);
                 break;
             case ERadarType.STT:
                 _coneAngles = Constants.RadarConfig.STTRadarConeAngles;
@@ -273,6 +290,8 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 _altitudeMaxText.gameObject.SetActive(false);
                 _circleBL.gameObject.SetActive(false);
                 _circleBR.gameObject.SetActive(false);
+
+                _distanceToTargetText.gameObject.SetActive(true);
                 break;
         }
 

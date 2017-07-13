@@ -146,5 +146,10 @@ public class UnitDisplay : MonoBehaviour
     {
         UpdateToMirrorWorld();
     }
+
+    private void OnDestroy()
+    {
+        RadarDisplayController.Instance.OnRadarTypeChange -= OnRadarScanModeChanged;
+    }
     #endregion
 }
