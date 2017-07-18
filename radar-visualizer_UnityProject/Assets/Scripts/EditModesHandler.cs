@@ -7,6 +7,8 @@ using UnityEngine.Assertions;
 public class EditModesHandler : Singleton<EditModesHandler>
 {
     #region public serialised vars
+    [SerializeField]
+    GameObject[] _clickAreas;
     #endregion
 
 
@@ -38,6 +40,8 @@ public class EditModesHandler : Singleton<EditModesHandler>
     void OnModeChanged(EEditModeType newMode)
     {
         _activeMode = newMode;
+        for (int i = 0; i < _clickAreas.Length; i++)
+            _clickAreas[i].SetActive(_activeMode == EEditModeType.Create);
     }
     #endregion
 

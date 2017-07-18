@@ -105,12 +105,18 @@ public class UnitEnemy : MonoBehaviour
         if (EditModesHandler.Instance.ActiveMode == EEditModeType.Delete)
             EnemyHandler.Instance.DeleteEnemy(this);
         else if (EditModesHandler.Instance.ActiveMode == EEditModeType.Move)
-            _onClickDistanceFromCamera = Vector3.Distance(GlobalInputHandler.Instance.ActiveCamera.Camera.transform.position, this.transform.position);
+            //_onClickDistanceFromCamera = Vector3.Distance(GlobalInputHandler.Instance.ActiveCamera.Camera.transform.position, this.transform.position);
+            _onClickDistanceFromCamera = GlobalInputHandler.Instance.ActiveCamera.Camera.WorldToScreenPoint(this.transform.position).z;
     }
 
     void Update()
     {
         UpdateVisual();
+    }
+
+    private void OnGUI()
+    {
+        GUI.Label(new Rect(200, 0, 100, 100), _onClickDistanceFromCamera.ToString());
     }
 
     void Start()

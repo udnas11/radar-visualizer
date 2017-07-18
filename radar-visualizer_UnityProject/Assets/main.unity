@@ -1195,7 +1195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -4553,7 +4553,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -5138,6 +5138,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ffc6691c277b7443ac8563e2627fccc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _clickAreas:
+  - {fileID: 969391983}
+  - {fileID: 880615472}
 --- !u!1001 &2132718014
 Prefab:
   m_ObjectHideFlags: 0
