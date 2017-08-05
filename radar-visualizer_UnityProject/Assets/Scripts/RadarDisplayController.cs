@@ -107,6 +107,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
     public Vector2 GetAltitudeLimitsAtDistance(float distance)
     {
+        /*
         float a = _coneAngles.y;
         float aRad = a * Mathf.Deg2Rad;
         float b = _coneRotation.y;
@@ -117,7 +118,12 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         float BD = Mathf.Sin(bRad - aRad / 2f) * AD;
 
         float altitudeDelta = RadarConeController.Instance.GetPivotAltitude();
-        return new Vector2(altitudeDelta + BD, altitudeDelta + CD);
+        return new Vector2(altitudeDelta + BD, altitudeDelta + CD)
+        */
+        float minimum = Math.GetPointForVerticalAngleAtGroundDistance(distance, _coneRotation.y - _coneAngles.y * 0.5f).y;
+        float maximum = Math.GetPointForVerticalAngleAtGroundDistance(distance, _coneRotation.y + _coneAngles.y * 0.5f).y;
+        float alt = RadarConeController.Instance.GetPivotAltitude();
+        return new Vector2(minimum + alt, maximum + alt);
     }
 
     public UnitDisplay CreateUnitDisplay(UnitEnemy unitWorld)
@@ -289,14 +295,14 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         Vector2 lastConeRotation = _coneRotation;
 
         //radar cone
-        _coneRotation.x = Math.GetPointHorizontalAngle(_enemySTT.transform.position);
-        _coneRotation.y = Math.GetPointVerticalAngle(_enemySTT.transform.position - Player.Instance.transform.position);        
+        _coneRotation.x = Math.GetAngleHorizontalForPoint(_enemySTT.transform.position);
+        _coneRotation.y = Math.GetAngleVerticalForPoint(_enemySTT.transform.position - Player.Instance.transform.position);        
         
         //check for fail
         if (_coneRotation != lastConeRotation)
         {
-            if (Mathf.Abs(_coneRotation.x) <= Constants.RadarConfig.GimbalLimits.x &&
-                Mathf.Abs(_coneRotation.y) <= Constants.RadarConfig.GimbalLimits.y)
+            if (Mathf.Abs(_coneRotation.x) <= Constants.RadarConfig.GimbalLimitsSTT.x &&
+                Mathf.Abs(_coneRotation.y) <= Constants.RadarConfig.GimbalLimitsSTT.y)
             {
                 if (OnRadarConeRotationChange != null)
                     OnRadarConeRotationChange(_coneRotation);
@@ -325,6 +331,13 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
 
                 _enemySTT = null;
                 _enemiesTWS.Clear();
+
+                if (Mathf.Abs(_coneRotation.y) > Constants.RadarConfig.GimbalLimits.y)
+                {
+                    _coneRotation.y = Mathf.Clamp(_coneRotation.y, -Constants.RadarConfig.GimbalLimits.y, Constants.RadarConfig.GimbalLimits.y);
+                    if (OnRadarConeRotationChange != null)
+                        OnRadarConeRotationChange(_coneRotation);
+                }
                 break;
             case ERadarType.TWS:
                 _coneAngles = Constants.RadarConfig.TWSRadarConeAngles;
@@ -573,7 +586,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 UpdateVisualsPrimaryTarget(_enemiesTWS[0]);
         }
     }
-
+    /*
     private void OnGUI()
     {
         GUILayout.BeginVertical("Box");
@@ -584,5 +597,6 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         GUILayout.Label("Cursor distance: " + _cursorDistance);
         GUILayout.EndVertical();
     }
+    */
     #endregion
 }

@@ -15,6 +15,7 @@ static public class Constants
         static public readonly Vector2 TWSRadarConeAngles = new Vector2(60f, 10f);
         static public readonly Vector2 STTRadarConeAngles = new Vector2(2.5f, 2.5f);
         static public readonly Vector2 GimbalLimits = new Vector2(60f, 30f);
+        static public readonly Vector2 GimbalLimitsSTT = new Vector2(60f, 60f);
     }
 
     static public class Colors

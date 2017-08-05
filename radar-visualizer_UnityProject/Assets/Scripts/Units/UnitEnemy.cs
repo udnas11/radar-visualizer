@@ -62,7 +62,7 @@ public class UnitEnemy : MonoBehaviour
         Vector2 altitudeLimits = RadarDisplayController.Instance.GetAltitudeLimitsAtDistance(distance);
         bool altitudeVisible = altitudeLimits.x <= alt && alt <= altitudeLimits.y;
 
-        float angle = Math.GetPointHorizontalAngle(transform.position);
+        float angle = Math.GetAngleHorizontalForPoint(transform.position);
         Vector2 coneAngles = RadarDisplayController.Instance.ConeAngles;
         Vector2 coneRotation = RadarDisplayController.Instance.ConeRotation;
         bool horizontalAngleVisible = coneRotation.x - coneAngles.x / 2f <= angle && angle <= coneRotation.x + coneAngles.x / 2f;
@@ -112,11 +112,6 @@ public class UnitEnemy : MonoBehaviour
     void Update()
     {
         UpdateVisual();
-    }
-
-    private void OnGUI()
-    {
-        GUI.Label(new Rect(200, 0, 100, 100), _onClickDistanceFromCamera.ToString());
     }
 
     void Start()

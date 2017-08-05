@@ -40,13 +40,13 @@ public class EditModesPanel : MonoBehaviour
                 _tipText.text = "";
                 break;
             case EEditModeType.Create:
-                _tipText.text = "Left click to create new enemy";
+                _tipText.text = "Left click on world view to create new enemy";
                 break;
             case EEditModeType.Move:
-                _tipText.text = "Drag an enemy to move it";
+                _tipText.text = "Drag an enemy from world view to move it";
                 break;
             case EEditModeType.Delete:
-                _tipText.text = "Left click on an enemy to delete it";
+                _tipText.text = "Left click on an enemy in world view to delete it";
                 break;
         }
     }

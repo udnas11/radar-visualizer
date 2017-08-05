@@ -41,6 +41,7 @@ public class RadarConeRenderer : MonoBehaviour
         Vector2 uvLT = new Vector2(0, 1);
         Vector2 uvRT = new Vector2(1, 1);
 
+        //Debug.Log("rot: " + rotation.y);
         for (int i = -_horizontalDivisions/2, j = 0; i <= _horizontalDivisions/2; i++, j++)
         {
             float t = i / (float)_horizontalDivisions;
