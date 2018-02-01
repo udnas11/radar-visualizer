@@ -19,6 +19,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     public event Action<Vector2> OnRadarConeAngleChange;
     public event Action<Vector2> OnRadarConeRotationChange;
     public event Action<ERadarType> OnRadarTypeChange;
+    public event Action<bool> OnShowHiddenEnemiesChange;
 
     #region public serialised vars
     [SerializeField, Header("Cursor")]
@@ -53,6 +54,23 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     UnitDisplay _prefabUnitDisplay;
     [SerializeField]
     RectTransform _enemyArea;
+
+
+    private bool _showHiddenEnemies = true;
+    public bool ShowHiddenEnemies
+    {
+        get
+        {
+            return _showHiddenEnemies;
+        }
+        set
+        {
+            _showHiddenEnemies = value;
+            Debug.Log("hidden show: " + value);
+            if (OnShowHiddenEnemiesChange != null)
+                OnShowHiddenEnemiesChange(value);
+        }
+    }
     #endregion
 
 

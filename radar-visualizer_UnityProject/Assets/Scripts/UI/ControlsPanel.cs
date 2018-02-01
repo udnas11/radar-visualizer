@@ -17,6 +17,9 @@ public class ControlsPanel : MonoBehaviour
     Text _radarElevationText;
     [SerializeField]
     Scrollbar _radarElevationScrollbar;
+
+    [SerializeField, Space]
+    Toggle _hiddenEnemiesToggle;
     #endregion
 
 
@@ -35,6 +38,11 @@ public class ControlsPanel : MonoBehaviour
     public void OnRadarElevationScrollChanged(float input)
     {
         RadarDisplayController.Instance.SetRadarElevation(Mathf.Lerp(-30f, 30f, input));
+    }
+
+    public void OnHiddenEnemiesVisibleChanged(bool value)
+    {
+        RadarDisplayController.Instance.ShowHiddenEnemies = value;
     }
     #endregion
 
@@ -61,6 +69,8 @@ public class ControlsPanel : MonoBehaviour
         _altitudeScroll.numberOfSteps = 41;
 
         _radarElevationScrollbar.onValueChanged.AddListener(OnRadarElevationScrollChanged);
+
+        _hiddenEnemiesToggle.onValueChanged.AddListener(OnHiddenEnemiesVisibleChanged);
     }
 
     private void Start()

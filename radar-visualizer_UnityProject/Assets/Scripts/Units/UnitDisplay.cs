@@ -60,7 +60,16 @@ public class UnitDisplay : MonoBehaviour
     {
         _isVisible = newState;
 
-        _imageSquare.color = _isVisible ? _squareColor : Constants.Colors.EnemyDisplayInvisible;
+        if (RadarDisplayController.Instance.ShowHiddenEnemies)
+        {
+            _imageSquare.color = _isVisible ? _squareColor : Constants.Colors.EnemyDisplayInvisible;
+            _imageHeadingLine.color = _isVisible ? Color.green : Color.red;
+        }
+        else
+        {
+            _imageSquare.color = _isVisible ? _squareColor : Color.clear;
+            _imageHeadingLine.color = _isVisible ? Color.green : Color.clear;
+        }
         _textAltitude.gameObject.SetActive(_isVisible);
     }
 
@@ -141,6 +150,11 @@ public class UnitDisplay : MonoBehaviour
                 break;
         }
     }
+
+    private void OnHiddenEnemiesVisibleChanged(bool newValue)
+    {
+        SetVisible(_isVisible);
+    }
     #endregion
 
 
@@ -153,6 +167,7 @@ public class UnitDisplay : MonoBehaviour
     private void Start()
     {
         RadarDisplayController.Instance.OnRadarTypeChange += OnRadarScanModeChanged;
+        RadarDisplayController.Instance.OnShowHiddenEnemiesChange += OnHiddenEnemiesVisibleChanged;
         OnRadarScanModeChanged(RadarDisplayController.Instance.ScanType); // applying radar scan mode during run-time instantiation        \
     }
 
