@@ -31,10 +31,14 @@ public class SideControlsLayout : MonoBehaviour
 
 
     #region mono events
-    private void Start()
+    private IEnumerator Start()
     {
         _rt = GetComponent<RectTransform>();
-        _rt.offsetMax = new Vector2(-_otherRT.rect.width, 0f);
+        for (;;)
+        {
+            _rt.offsetMax = new Vector2(-_otherRT.rect.width, 0f);
+            yield return new WaitForSeconds(3f);
+        }
     }
     #endregion
 }

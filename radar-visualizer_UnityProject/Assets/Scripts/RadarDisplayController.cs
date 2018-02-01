@@ -313,8 +313,11 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         Vector2 lastConeRotation = _coneRotation;
 
         //radar cone
-        _coneRotation.x = Math.GetAngleHorizontalForPoint(_enemySTT.transform.position);
-        _coneRotation.y = Math.GetAngleVerticalForPoint(_enemySTT.transform.position - Player.Instance.transform.position);        
+        Vector3 enemyPos = _enemySTT.transform.position;
+        _coneRotation.x = Math.GetAngleHorizontalForPoint(enemyPos);
+        Vector3 positionAt12 = enemyPos - Player.Instance.transform.position;
+        positionAt12 = Quaternion.Euler(0f, -_coneRotation.x, 0f) * positionAt12;
+        _coneRotation.y = Math.GetAngleVerticalForPoint(positionAt12);
         
         //check for fail
         if (_coneRotation != lastConeRotation)
