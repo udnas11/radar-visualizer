@@ -450,9 +450,15 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
     void OnZoomInputChange(float axis)
     {
         if (axis > 0)
+        {
             _zoomFactor /= 2;
+            AnalyticsController.OnZoomIn();
+        }
         else if (axis < 0)
+        {
             _zoomFactor *= 2;
+            AnalyticsController.OnZoomOut();
+        }
 
         _zoomFactor = Mathf.Clamp(_zoomFactor, 10, 160);
         _zoomText.text = _zoomFactor.ToString();
@@ -476,14 +482,19 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         {
             case ERadarType.RWS:
                 SetScanType(ERadarType.TWS);
+                AnalyticsController.OnToggleTWS();
                 break;
             case ERadarType.TWS:
                 if (_enemiesTWS.Count == 0)
+                {
                     SetScanType(ERadarType.RWS);
+                    AnalyticsController.OnToggleTWS();
+                }
                 else
                 {
                     _enemySTT = _enemiesTWS[0];
                     SetScanType(ERadarType.STT);
+                    AnalyticsController.OnLockSTT();
                 }
                 break;
             // nothing happens during STT
@@ -501,6 +512,7 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                 {
                     _enemySTT = selectedEnemy;
                     SetScanType(ERadarType.STT);
+                    AnalyticsController.OnLockSTT();
                 }
                 break;
             case ERadarType.TWS:
@@ -511,11 +523,15 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
                     {
                         _enemySTT = selectedEnemy;
                         SetScanType(ERadarType.STT);
+                        AnalyticsController.OnLockSTT();
                     }
                     else
                     {
                         if (_enemiesTWS.Count < 4)
+                        {
                             AddEnemyToTWS(selectedEnemy);
+                            AnalyticsController.OnLockTWS();
+                        }
                     }
                 }
                 break;
@@ -535,10 +551,14 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
             case ERadarType.TWS:
                 UnitEnemy selectedEnemy = GetEnemyUnderCursor();
                 if (_enemiesTWS.Contains(selectedEnemy))
+                {
                     RemoveEnemyFromTWS(selectedEnemy);
+                    AnalyticsController.OnUnlockTWS();
+                }
                 break;
             case ERadarType.STT:
                 SetScanType(ERadarType.RWS);
+                AnalyticsController.OnUnlockSTT();
                 break;
         }
     }

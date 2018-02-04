@@ -105,8 +105,11 @@ public class UnitEnemy : MonoBehaviour
         if (EditModesHandler.Instance.ActiveMode == EEditModeType.Delete)
             EnemyHandler.Instance.DeleteEnemy(this);
         else if (EditModesHandler.Instance.ActiveMode == EEditModeType.Move)
+        {
             //_onClickDistanceFromCamera = Vector3.Distance(GlobalInputHandler.Instance.ActiveCamera.Camera.transform.position, this.transform.position);
             _onClickDistanceFromCamera = GlobalInputHandler.Instance.ActiveCamera.Camera.WorldToScreenPoint(this.transform.position).z;
+            AnalyticsController.OnEnemyMove();
+        }
     }
 
     void Update()

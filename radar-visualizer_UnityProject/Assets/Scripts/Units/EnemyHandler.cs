@@ -24,6 +24,7 @@ public class EnemyHandler : Singleton<EnemyHandler>
 
     public UnitEnemy SpawnEnemy(Vector3 position)
     {
+        AnalyticsController.OnEnemyCreate();
         UnitEnemy newInst = Instantiate(_enemyPrefabWorld, position, Quaternion.Euler(0f, 180f, 0f), _spawnTransform) as UnitEnemy;
         return newInst;
     }
@@ -39,7 +40,7 @@ public class EnemyHandler : Singleton<EnemyHandler>
     public void DeleteEnemy(UnitEnemy unit)
     {
         Assert.IsTrue(_enemies.Contains(unit));
-
+        AnalyticsController.OnEnemyDelete();
         UnitDisplay unitDisplay = unit.UnitDisplay;
         _enemies.Remove(unit);
         Destroy(unitDisplay.gameObject);
