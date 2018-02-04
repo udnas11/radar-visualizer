@@ -43,6 +43,7 @@ public class ControlsPanel : MonoBehaviour
     public void OnHiddenEnemiesVisibleChanged(bool value)
     {
         RadarDisplayController.Instance.ShowHiddenEnemies = value;
+        AnalyticsController.OnToggleHiddenEnemies();
     }
     #endregion
 

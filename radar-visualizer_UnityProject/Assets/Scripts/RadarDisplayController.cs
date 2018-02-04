@@ -66,7 +66,6 @@ public class RadarDisplayController : Singleton<RadarDisplayController>
         set
         {
             _showHiddenEnemies = value;
-            Debug.Log("hidden show: " + value);
             if (OnShowHiddenEnemiesChange != null)
                 OnShowHiddenEnemiesChange(value);
         }

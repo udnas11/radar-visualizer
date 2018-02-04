@@ -21,6 +21,7 @@ static public class AnalyticsController
         public const string EnemyCreate = "EnemyCreate";
         public const string EnemyMove = "EnemyMove";
         public const string EnemyDelete = "EnemyDelete";
+        public const string ToggleHiddenEnemies = "ToggleHiddenEnemies";
     }
 
 
@@ -37,4 +38,6 @@ static public class AnalyticsController
     static public void OnEnemyCreate() { Analytics.CustomEvent(EventNames.EnemyCreate); }
     static public void OnEnemyMove() { Analytics.CustomEvent(EventNames.EnemyMove); }
     static public void OnEnemyDelete() { Analytics.CustomEvent(EventNames.EnemyDelete); }
+
+    static public void OnToggleHiddenEnemies() { Analytics.CustomEvent(EventNames.ToggleHiddenEnemies); }
 }
